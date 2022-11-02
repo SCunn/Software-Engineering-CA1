@@ -48,15 +48,16 @@ int main() {
     marineAnim.runningTime = 0.0;
 
     //#########  Game Physics ###############################
-
+    //-------- variables for jumping --------------
     int velocity{10};
     const int gravity{1000};
+    int jumpHeight{500};
+    bool IsJumping = false;
+
     // integer to move sprite
     int speed{250};
     // change jumpHeight to pixels per second
-    int jumpHeight{500};
     // boolean value to determine if character is jumping or not, set to false as default action
-    bool IsJumping = false;
     bool collision{};
 
 
@@ -71,19 +72,19 @@ int main() {
     while(!WindowShouldClose()){
         // Get time in seconds for the last frame drawn (delta time)
         const float deltaTime{GetFrameTime()};
-        // Include Rectangle marineRec class to all for updates to the variables during the game runtime, 
-        // used for game collisions
-        Rectangle marineRec{
-	        marineAnim.pos.x,
-	        marineAnim.pos.y,
-	        marineAnim.rec.height,
-	        marineAnim.rec.width	
-	    };
+        // // Include Rectangle marineRec class to all for updates to the variables during the game runtime, 
+        // // used for game collisions
+        // Rectangle marineRec{
+	    //     marineAnim.pos.x,
+	    //     marineAnim.pos.y,
+	    //     marineAnim.rec.height,
+	    //     marineAnim.rec.width	
+	    // };
 
     //  ############################### Character Movement ###########################
     // ------------------------------------- Marine ---------------------------------
 
-        ////////////////////////////// Make Character Jump //////////////////////////////
+        ////////////////////////////// Make Character Jump - Y-AXIS //////////////////////////////
 
         // if the marine's position on the y axis is greater than or equal to windowHeight - marine.height
         if (marineAnim.pos.y >= windowHeight - marine.height){
@@ -107,6 +108,36 @@ int main() {
         // this statement makes marine sink on the Y axis or fly off the top of the screen
         // when space bar is pressed. an additional conditional is required to make the marine jump and land correctly
         marineAnim.pos.y += velocity * deltaTime;
+
+        ////////////////////////////// Movement - X-AXIS ///////////////////////////////////////
+
+        if(IsKeyDown(KEY_D) && !IsJumping){
+            marineAnim.pos.x += speed*deltaTime;
+            marineAnim.rec.width = marine.width/4;
+            
+            
+            marineAnim.runningTime += deltaTime; 
+
+             if(marineAnim.runningTime >= marineAnim.updateTime){
+                marineAnim.runningTime = 0.0;
+                // Create sprite animation, character rectangle on x axis is equal to frame integer multiplied rec width
+                marineAnim.rec.x = marineAnim.frame* marineAnim.rec.width;
+                // Increment frame by 1, cycle through .png frames
+                marineAnim.frame++;
+                // if the frame count gets greater than 4
+             if (marineAnim.frame > 3){
+                // set frame count back to zero in order to restart cycle through .png frames
+                marineAnim.frame = 0;
+             }
+	        }
+        }
+
+        // When D key is released and sprite is not jumping
+        if(IsKeyReleased(KEY_D) && !IsJumping){
+            // reset frame back to zero, revert sprite to first frame
+            marineAnim.frame = 0;
+            marineAnim.rec.x = marineAnim.frame * marineAnim.rec.width;
+        }
 
         // Call raylib's BeginDrawing method, sets up canvas or (framebuffer) to begin drawing
         BeginDrawing();
