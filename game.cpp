@@ -32,7 +32,7 @@ int main() {
 
     // Locate and load the texture file in the resources folder  // Marine.png original DOOM content taken from https://spritedatabase.net/file/555
     Texture2D marine = LoadTexture("resources/marine_walking.png");
-    Texture2D demon = LoadTexture("resources/demon.png");
+    Texture2D demon = LoadTexture("resources/demon_walking.png");
 
     // ----------------- Marine class ------------------------------------
     // Call struct Anim, create class marineAnim
@@ -57,10 +57,37 @@ int main() {
     // This variable wil contain the runningTime data, this is used in conjuction with the updateTime variable to regulate the animation speed
     marineAnim.runningTime = 0.0;
 
+    // ----------------- Demon class ------------------------------------
+    // Call struct Anim, create class demonAnim
+    Anim demonAnim;
+    // set rectangle width equal to Texture2d demon width (png image) and divide into 4 frames, This is used to contain the sprites
+    demonAnim.rec.width = demon.width/4; 
+    // set rectangle width equal to Texture2d demon height (png image), This will be the sprite height 
+    demonAnim.rec.height = demon.height;
+    // set rectangle x and y axis to 0, data for the rectangles will be stored in these two variables
+    demonAnim.rec.x = 0;
+    demonAnim.rec.y = 0;
+    // this will set the player charaters position on the X axis when the game begins
+    // the position x of the demon is equal to half of the windowWidth minus half of the rectangle width
+    demonAnim.pos.x = windowWidth - demonAnim.rec.width;
+    // this will set the player charaters position on the Y axis when the game begins
+    // the position Y of the demon is equal to the windowHeight minus the rectangle height
+    demonAnim.pos.y = windowHeight - demonAnim.rec.height;
+    // this integer variable will contain the frame rate values when the character makes an action
+    demonAnim.frame = 0;
+    // Update the animation speed, takes 1 second then divides it by 12, this slows the frame rate down
+    demonAnim.updateTime = 1.0/12.0;
+    // This variable wil contain the runningTime data, this is used in conjuction with the updateTime variable to regulate the animation speed
+    demonAnim.runningTime = 0.0;
+
+
+
     //#########  Game Physics ###############################
     //-------- variables for jumping --------------
     // the velocity is used to control the speed of the jump
     int velocity{20};
+
+    int demonVel{-300}
     // force of gravity in the game, brings player back to the ground
     const int gravity{2000};
     // the height of the jump under the constraints of velocity and gravity
@@ -199,12 +226,22 @@ int main() {
         }
 
 
+        // --------------------------------------- Demon -------------------------------------------
+
+        // add velocity to Demon
+        demonAnim.pos.x += demonVel * deltaTime;
+
+
+
+
         // Call raylib's BeginDrawing method, sets up canvas or (framebuffer) to begin drawing
         BeginDrawing();
 
         // Call DrawTextureRec() method from the raylib.h library and include the Texture2D texture, Rectangle source, Vector2 position, Color tint
         // Draw the marine for the game
         DrawTextureRec(marine,marineAnim.rec,marineAnim.pos,WHITE);
+        // Draw the demon for the game
+        DrawTextureRec(demon,demonAnim.rec,demonAnim.pos,RED);
 
 
 
