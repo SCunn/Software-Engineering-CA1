@@ -2,6 +2,9 @@
 // import raylib library
 #include "raylib.h"
 
+// --------------------------------------------------------------------------------------------------------
+//                                          Structures 
+// --------------------------------------------------------------------------------------------------------
 
 // structs are used to group related variables to one place, each variable in the struct is known as a member 
 // struct Anim hold variables related to the animation logic
@@ -17,6 +20,20 @@ struct Anim {
     float runningTime;
 };
 
+// marines shells 
+struct Shells{
+    Rectangle rec;
+    Vector2 shot_speed;
+    Color colour;
+    bool active;
+};
+
+
+
+//---------------------------------------------------------------------------------------------------------
+//                                      Program main entry point
+//---------------------------------------------------------------------------------------------------------
+
 // main c++ function that contains the game application between the curly brackets
 int main() {
 
@@ -28,13 +45,25 @@ int main() {
     // include the following variable types within the brackets(int width, int height, const char *title) 
     InitWindow(windowWidth,windowHeight,"DuuM Fook'em 2D");
 
-    // #########  Game Characters / Sprites  #############################
+    InitAudioDevice();
+
+    // --------------------------------------------------------------------------------
+    //                          Game Characters / Sprites  
+    // --------------------------------------------------------------------------------
 
     // Locate and load the texture file in the resources folder  // Marine.png original DOOM content taken from https://spritedatabase.net/file/555
     Texture2D marine = LoadTexture("resources/marine_walking.png");
     Texture2D demon = LoadTexture("resources/demon_walking.png");
 
-    // ----------------- Marine class ------------------------------------
+    // Local variables
+
+    // number of shells
+    int shell_num{50};
+
+    // --------------------------------------------------------------------------------
+    //                                  Marine class 
+    // --------------------------------------------------------------------------------
+
     // Call struct Anim, create class marineAnim
     Anim marineAnim;
     // set rectangle width equal to Texture2d marine width (png image) and divide into 4 frames, This is used to contain the sprites
@@ -57,9 +86,29 @@ int main() {
     // This variable wil contain the runningTime data, this is used in conjuction with the updateTime variable to regulate the animation speed
     marineAnim.runningTime = 0.0;
 
+    // // marines shells/ bullets
+    // Shells shell[shell_num];
+    //     for (int i = 0; i < shell_num; i++){
+    //         shell[i].rec.height = 50;
+    //         shell[i].rec.width = 50;
+    //         shell[i].colour = ORANGE;
+    //         shell[i].rec.x = (windowWidth/2) + (marineAnim.rec.width/2) - (shell[i].rec.width/2);
+    //         shell[i].rec.y = (windowHeight - marineAnim.rec.height) - (shell[i].rec.height);
+    //         shell[i].shot_speed.x = 100;
+    //         shell[i].shot_speed.y = 100;
+    //         shell[i].active = false;
+    //         }
+    //         int fire_rate = 0;
+    //     }
 
-// ----------------- Demon class ------------------------------------
+        // Sound shotgun = LoadSound("resources/266105__marregheriti__shotgun.wav");
 
+
+
+
+    // --------------------------------------------------------------------------------------
+    //                                  Demon class 
+    // --------------------------------------------------------------------------------------
         //  Variables for demon
     Rectangle demonRec;
     demonRec.width = demon.width/4;
@@ -70,19 +119,22 @@ int main() {
     demonPos.x = windowWidth- demonRec.width;
     demonPos.y = windowHeight - demonRec.height;
 
-
+    // Sound growl = LoadSound("resources/angry-beast.wav");
+    
     // demon Velocity
-    int demonVel{-300};
+    int demonVel{-200};
 
+    // --------------------------------------------------------------------------------------
+    //                                  Game Physics Variables
+    // --------------------------------------------------------------------------------------
 
-    //#########  Game Physics ###############################
     //-------- variables for jumping --------------
     // the velocity is used to control the speed of the jump
     int velocity{20};
     // force of gravity in the game, brings player back to the ground
     const int gravity{2000};
     // the height of the jump under the constraints of velocity and gravity
-    int jumpHeight{550};
+    int jumpHeight{600};
     // Boolean value to determine if the player is jumping or not, if the jump is true or false (0 or 1). 
     // set to false as default action
     bool IsJumping = false;
@@ -93,11 +145,6 @@ int main() {
     // boolean value to determine if character has had a collision or not, set as a null value
     bool collision{};
 
-
-    // // Update the animation speed, takes 1 second then divides it by 12
-    // const float updateTime{1.0/12};
-    // // float to contain the running time data
-    // float runningTime{};
 
 
     SetTargetFPS(60);
@@ -127,7 +174,10 @@ int main() {
         BeginDrawing();
 
         //  ############################### Character Movement ###########################
-        // ------------------------------------- Marine ---------------------------------
+
+        // -----------------------------------------------------------------------
+        //                                       Marine 
+        // -----------------------------------------------------------------------
 
         ////////////////////////////// Make Character Jump - Y-AXIS //////////////////////////////
 
@@ -149,6 +199,10 @@ int main() {
             // Move object up by 10
             velocity -= jumpHeight;
         } 
+        // make marine position y equal to velocity, then multiply velocity by deltaTime
+        // this statement makes marine sink on the Y axis or fly off the top of the screen
+        // when space bar is pressed. an additional conditional is required to make the marine jump and land correctly
+        marineAnim.pos.y += velocity * deltaTime;
 
 
         ////////////////////////////// Movement - X-AXIS ///////////////////////////////////////
@@ -225,33 +279,71 @@ int main() {
             marineAnim.rec.x = marineAnim.frame * marineAnim.rec.width;
         }
 
+        //---------------------------  Shooting   -------------------------------------- 
+        
+    //     // Draw Shells
+    //     for (int i = 0; i < shell_num; i++){
+    //         if(shell[i].active){
+    //             DrawRectangleRec(shell[i].rec, shell[i].color )
+    //         }
+    //     }
+
+    //     // Shoot
+    //     if(IsKeyDown(KEY_S)){
+    //         fire_rate += 1;
+    //         for (int i = 0; i < shell_num; i++){
+    //             if (!shell[i].active && fire_rate % 40 == 0){
+    //                 // add sfx here PlaySound(sound);
+    //                 // PlaySound(shotgun);
+    //                 shell[i].rec.x = marineAnim.rec.x;
+    //                 shell[i].rec.y = marineAnim.rec.y + marineAnim.rec.height/2;
+    //                 shell[i].active = true;
+    //                 break;
+    //             }
+    //         }
+    //     }
 
 
-                // make marine position y equal to velocity, then multiply velocity by deltaTime
-        // this statement makes marine sink on the Y axis or fly off the top of the screen
-        // when space bar is pressed. an additional conditional is required to make the marine jump and land correctly
-        marineAnim.pos.y += velocity * deltaTime;
+    //     for (int i = 0; i < shell_num; i++){
+    //     if (shell[i].active)
+    //     {
+           
+    //         shell[i].rec.x += shell[i].shot_speed.x;
 
+    //         if (shell[i].rec.x <= 0) 
+    //         {
+    //             shell[i].active = false;
+    //             fire_rate = 0;
+    //         }
+    //     }
+    // }
 
-        // Call raylib's BeginDrawing method, sets up canvas or (framebuffer) to begin drawing
-        // BeginDrawing();
+        // -----------------------------------------------------------------------
+        //                               Demon 
+        // -----------------------------------------------------------------------
+
 
         // Call DrawTextureRec() method from the raylib.h library and include the Texture2D texture, Rectangle source, Vector2 position, Color tint
         // Draw the marine for the game
         // DrawTextureRec(marine,marineAnim.rec,marineAnim.pos,WHITE);
 
-        // add velocity to demon
-        demonPos.x += demonVel * deltaTime;
+        // // add velocity to demon
+        // demonPos.x += demonVel * deltaTime;
 
 
         // Call raylib's ClearBackground method, colour window white
         ClearBackground(BLACK);
 
         if(collision){
-            ClearBackground(RED);
-        } else {
-
+            // ClearBackground(RED);
             DrawTextureRec(marine,marineAnim.rec,marineAnim.pos,WHITE);
+            // Draw the demon
+            DrawTextureRec(demon, demonRec, demonPos, WHITE);
+        } else {
+        // Call DrawTextureRec() method from the raylib.h library and include the Texture2D texture, Rectangle source, Vector2 position, Color tint
+            // Draw the marine for the game
+            DrawTextureRec(marine,marineAnim.rec,marineAnim.pos,WHITE);
+            // Draw the demon
             DrawTextureRec(demon, demonRec, demonPos, WHITE); 
         }
 
@@ -260,5 +352,8 @@ int main() {
     }
         UnloadTexture(marine);
         UnloadTexture(demon);
+        // UnloadTexture(shell);
+
+        CloseAudioDevice(); 
         CloseWindow();
 }
