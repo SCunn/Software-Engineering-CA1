@@ -97,6 +97,7 @@ int main() {
 
     // number of shells
     int shell_num{50};
+    int Enemy_Amount{0};
 
     
 
@@ -130,23 +131,23 @@ int main() {
     // marine facing left
     bool left;
 
-    // // marines shells/ bullets rightward
-    // Shells shell[shell_num];
-    //     for (int i = 0; i < shell_num; i++){
-    //         shell[i].rec.height = 50;
-    //         shell[i].rec.width = 50;
-    //         shell[i].colour = ORANGE;
-    //         shell[i].rec.x = (windowWidth/2) + (marineAnim.rec.width/2) - (shell[i].rec.width/2);
-    //         shell[i].rec.y = (windowHeight - marineAnim.rec.height) - (shell[i].rec.height);
-    //         shell[i].shot_speed.x = 3;
-    //         shell[i].shot_speed.y = 3;
-    //         shell[i].active = false;
-    //         shell[i].lifeSpawn = 0;
-    //         }
-    //         int fire_rate = 0;
-    //     }
+    // marines shells/ bullets rightward
+    Shells shell[shell_num];
+    for (int i = 0; i < shell_num; i++){
+            shell[i].rec.height = 2;
+            shell[i].rec.width = 50;
+            shell[i].colour = ORANGE;
+            shell[i].rec.x = (windowWidth/2) + (marineAnim.rec.width/2) - (shell[i].rec.width/2);
+            shell[i].rec.y = (windowHeight - marineAnim.rec.height) - (shell[i].rec.height);
+            shell[i].shot_speed.x = 100;
+            shell[i].shot_speed.y = 100;
+            shell[i].active = false;
+            shell[i].lifeSpawn = 0;
+            }
+            int fire_rate = 0;
+        
 
-    //     Sound shotgun = LoadSound("resources/266105__marregheriti__shotgun.wav");
+        Sound shotgun = LoadSound("resources/266105__marregheriti__shotgun.wav");
 
 
 
@@ -156,34 +157,36 @@ int main() {
     // --------------------------------------------------------------------------------------
     
 
-    // // Enemy Code sourced from HE360, Raylib C/C++ Tutorial 6: Animated Enemy Sprites, A.I., Collisions, and How to  Defeat Your Enemy. https://www.youtube.com/watch?v=lCJrj_IEFlw
-    // // static Enemy will store the enemy Array
-    // // static Variables are initialized only once as they are allocated space in separate static storage
-    // static Enemy enemy[Enemy_Amount] = { 0 };
-    // // this stores the where the enemies are placed on screen when the game launches
-    // int EnemyX = 100;
-    // int EnemyY = 250;
-    
-    // // Setting up the enemy's position and where they start
-    // // on screen, We are also setting up the enemy's invisable animation rectangle that hides
-    // // the other frames while a current animation is played. here we will set up 
-    // // whether the enemy is active or not, the frame counter, the frame speed and current frame.
-    // // Using a for loop to create enemies will simplify the process of duplicating more enimies
-    // for (int i = 0; i < Enemy_Amount; i++){
-    //     enemy[i].EnemyPosition = (Vector2){EnemyX, EnemyY};
-    //     enemy[i].EnemyFrameRec.x = 290.0f;
-    //     enemy[i].EnemyFrameRec.y = 0.0f;
-    //     // enemy[i].EnemyFrameRec.width = 70;
-    //     // enemy[i].EnemyFrameRec.height = 111;
-    //     enemy[i].EnemyFrameRec.width = demon.width/4;
-    //     enemy[i].EnemyFrameRec.height = demon.height;
 
-    //     enemy[i].active = true;
-    //     enemy[i].EnemyFrameCounter = 0;
-    //     enemy[i].EnemyFrameSpeed = 8;
-    //     enemy[i].EnemyCurrentFrame = 0;
+    // this stores the where the enemies are placed on screen when the game launches
+    int EnemyX = 100;
+    int EnemyY = 250;
 
-    // }
+
+    // Enemy Code sourced from HE360, Raylib C/C++ Tutorial 6: Animated Enemy Sprites, A.I., Collisions, and How to  Defeat Your Enemy. https://www.youtube.com/watch?v=lCJrj_IEFlw
+    // static Enemy will store the enemy Array
+    // static Variables are initialized only once as they are allocated space in separate static storage
+    // Setting up the enemy's position and where they start
+    // on screen, We are also setting up the enemy's invisable animation rectangle that hides
+    // the other frames while a current animation is played. here we will set up 
+    // whether the enemy is active or not, the frame counter, the frame speed and current frame.
+    // Using a for loop to create enemies will simplify the process of duplicating more enimies
+    Enemy enemy[Enemy_Amount];
+    for (int i = 0; i < Enemy_Amount; i++){
+        enemy[i].EnemyPosition = (Vector2){EnemyX, EnemyY};
+        enemy[i].EnemyFrameRec.x = 290.0f;
+        enemy[i].EnemyFrameRec.y = 0.0f;
+        // enemy[i].EnemyFrameRec.width = 70;
+        // enemy[i].EnemyFrameRec.height = 111;
+        enemy[i].EnemyFrameRec.width = demon.width/4;
+        enemy[i].EnemyFrameRec.height = demon.height;
+
+        enemy[i].active = true;
+        enemy[i].EnemyFrameCounter = 0;
+        enemy[i].EnemyFrameSpeed = 8;
+        enemy[i].EnemyCurrentFrame = 0;
+
+    }
 
     // This Rectangle is used to help with the invisable animation rectangle regulator
     // what is of interest here is the Enemy.width/4 part.
@@ -193,19 +196,19 @@ int main() {
 
 
         //  Variables for demon
-    // Rectangle demonRec;
-    // demonRec.width = demon.width/4;
-    // demonRec.height = demon.height; 
-    // demonRec.x = 0;
-    // demonRec.y = 0;
-    // Vector2 demonPos; 
-    // demonPos.x = windowWidth- demonRec.width;
-    // demonPos.y = windowHeight - demonRec.height;
+    Rectangle demonRec;
+    demonRec.width = demon.width/4;
+    demonRec.height = demon.height; 
+    demonRec.x = 0;
+    demonRec.y = 0;
+    Vector2 demonPos; 
+    demonPos.x = windowWidth- demonRec.width;
+    demonPos.y = windowHeight - demonRec.height;
 
-    // Sound growl = LoadSound("resources/angry-beast.wav");
+    Sound growl = LoadSound("resources/angry-beast.wav");
     
-    // // demon Velocity
-    // int demonVel{-200};
+    // demon Velocity
+    int demonVel{-200};
 
     // --------------------------------------------------------------------------------------
     //                                  Game Physics Variables
@@ -390,41 +393,41 @@ int main() {
         //---------------------------  Shooting   -------------------------------------- 
         
         
-        // // Draw Shells
-        // for (int i = 0; i < shell_num; i++){
-        //     if(shell[i].active){
-        //         DrawRectangleRec(shell[i].rec, shell[i].color )
-        //     }
-        // }
+        // Draw Shells
+        for (int i = 0; i < shell_num; i++){
+            if(shell[i].active){
+                DrawRectangleRec(shell[i].rec, shell[i].colour);
+            }
+        }
 
-        // // Shoot to the right of the x axis
-
-
-        // if(IsKeyPressed(KEY_S) && right){
-        //     fire_rate += 1;
-        //     for (int i = 0; i < shell_num; i++){
-        //         if (!shell[i].active && fire_rate % 40 == 0){
-        //             // add sfx here PlaySound(sound);
-        //             PlaySound(shotgun);
-        //             shell[i].rec.x = marineAnim.rec.x;
-        //             shell[i].rec.y = marineAnim.rec.y + marineAnim.rec.height / 2;
-        //             shell[i].active = true;
-        //             break;
-        //         }
-        //     }
-        // }
+        // Shoot to the right of the x axis
 
 
-        // for (int i = 0; i < shell_num; i++){
-        //         if (shell[i].active) {
-        //         shell[i].rec.x += shell[i].shot_speed.x;
+        if(IsKeyDown(KEY_S) && right){
+            fire_rate += 1;
+            for (int i = 0; i < shell_num; i++){
+                if (!shell[i].active && fire_rate % 90 == 0){
+                    // add sfx here PlaySound(sound);
+                    PlaySound(shotgun);
+                    shell[i].rec.x = marineAnim.pos.x;
+                    shell[i].rec.y = marineAnim.pos.y + marineAnim.rec.height / 2;
+                    shell[i].active = true;
+                    break;
+                }
+            }
+        }
 
-        //         if (shell[i].rec.x <= 0) {
-        //             shell[i].active = false;
-        //             fire_rate = 0;
-        //         }
-        //     }
-        // }
+
+        for (int i = 0; i < shell_num; i++){
+                if (shell[i].active) {
+                shell[i].rec.x += shell[i].shot_speed.x;
+
+                if (shell[i].rec.x <= 0) {
+                    shell[i].active = false;
+                    fire_rate = 0;
+                }
+            }
+        }
 
 
 
