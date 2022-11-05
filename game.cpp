@@ -97,6 +97,7 @@ int main() {
 
     // number of shells
     int shell_num{50};
+    int shell_left_num{50};
     int Enemy_Amount{0};
 
     
@@ -145,7 +146,20 @@ int main() {
             shell[i].lifeSpawn = 0;
             }
             int fire_rate = 0;
-        
+
+    
+    Shells_Left shellLeft[shell_left_num];
+    for (int i = 0; i < shell_left_num; i++){
+            shellLeft[i].recLeft.height = 2;
+            shellLeft[i].recLeft.width = 50;
+            shellLeft[i].colourLeft = ORANGE;
+            shellLeft[i].recLeft.x = (windowWidth/2) + (marineAnim.rec.width/2) - (shellLeft[i].recLeft.width/2);
+            shellLeft[i].recLeft.y = (windowHeight - marineAnim.rec.height) - (shellLeft[i].recLeft.height);
+            shellLeft[i].shot_speedLeft.x = 100;
+            shellLeft[i].shot_speedLeft.y = 100;
+            shellLeft[i].activeLeft = false;
+            shellLeft[i].lifeSpawnLeft = 0;
+    }   
 
         Sound shotgun = LoadSound("resources/266105__marregheriti__shotgun.wav");
 
@@ -393,7 +407,7 @@ int main() {
         //---------------------------  Shooting   -------------------------------------- 
         
         
-        // Draw Shells
+        // Draw Shells right
         for (int i = 0; i < shell_num; i++){
             if(shell[i].active){
                 DrawRectangleRec(shell[i].rec, shell[i].colour);
@@ -401,7 +415,6 @@ int main() {
         }
 
         // Shoot to the right of the x axis
-
 
         if(IsKeyDown(KEY_S) && right){
             fire_rate += 1;
@@ -429,6 +442,39 @@ int main() {
             }
         }
 
+        // Draw Shells left
+        for (int i = 0; i < shell_left_num; i++){
+            if(shellLeft[i].activeLeft){
+                DrawRectangleRec(shellLeft[i].recLeft, shellLeft[i].colourLeft);
+            }
+        }
+
+        // Shoot to the left of the x axis
+        if(IsKeyDown(KEY_S) && left){
+            fire_rate += 1;
+            for (int i = 0; i < shell_left_num; i++){
+                if (!shellLeft[i].activeLeft && fire_rate % 90 == 0){
+                    // add sfx here PlaySound(sound);
+                    PlaySound(shotgun);
+                    shellLeft[i].recLeft.x = marineAnim.pos.x;
+                    shellLeft[i].recLeft.y = marineAnim.pos.y + marineAnim.rec.height / 2;
+                    shellLeft[i].activeLeft = true;
+                    break;
+                }
+            }
+        }
+
+
+        for (int i = 0; i < shell_num; i++){
+                if (shellLeft[i].activeLeft) {
+                shellLeft[i].recLeft.x -= shellLeft[i].shot_speedLeft.x;
+
+                if (shellLeft[i].recLeft.x <= 0) {
+                    shellLeft[i].activeLeft = false;
+                    fire_rate = 0;
+                }
+            }
+        }
 
 
         // -----------------------------------------------------------------------
