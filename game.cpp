@@ -244,6 +244,7 @@ int main() {
     
     // boolean value to determine if character has had a collision or not, set as a null value
     bool collision{};
+    bool marine_and_enemy_Collide;
 
 
 
@@ -264,12 +265,12 @@ int main() {
 		//     demonRec.height,
 		//     demonRec.width,
 	    // };
-        // Rectangle marineRec{
-	    //     marineAnim.pos.x,
-	    //     marineAnim.pos.y,
-	    //     marineAnim.rec.height,
-	    //     marineAnim.rec.width	
-	    // };
+        Rectangle marineRec{
+	        marineAnim.pos.x,
+	        marineAnim.pos.y,
+	        marineAnim.rec.height,
+	        marineAnim.rec.width	
+	    };
 
         // if(CheckCollisionRecs(marineRec, enemy[i].EnemyCollision)){
 	    // 	// collision = true;
@@ -277,9 +278,9 @@ int main() {
 
         // // Enemy Code sourced from HE360, Raylib C/C++ Tutorial 6: Animated Enemy Sprites, A.I., Collisions, and How to  Defeat Your Enemy. https://www.youtube.com/watch?v=lCJrj_IEFlw
 
-        // for (int i = 0; i < Enemy_Amount; i++){
-        //     marine_and_enemy_Collide = CheckCollisionRecs(marineRec, enemy[i].EnemyCollision);
-        // }
+        for (int i = 0; i < Enemy_Amount; i++){
+            marine_and_enemy_Collide = CheckCollisionRecs(marineRec, enemy[i].EnemyCollision);
+        }
 
 
 
@@ -422,7 +423,7 @@ int main() {
                 if (!shell[i].active && fire_rate % 90 == 0){
                     // add sfx here PlaySound(sound);
                     PlaySound(shotgun);
-                    shell[i].rec.x = marineAnim.pos.x;
+                    shell[i].rec.x = marineAnim.pos.x + marineAnim.rec.width / (float)0.5;
                     shell[i].rec.y = marineAnim.pos.y + marineAnim.rec.height / 2;
                     shell[i].active = true;
                     break;
@@ -439,8 +440,12 @@ int main() {
                     shell[i].active = false;
                     fire_rate = 0;
                 }
+
+                
             }
         }
+
+        
 
         // Draw Shells left
         for (int i = 0; i < shell_left_num; i++){
@@ -456,7 +461,7 @@ int main() {
                 if (!shellLeft[i].activeLeft && fire_rate % 90 == 0){
                     // add sfx here PlaySound(sound);
                     PlaySound(shotgun);
-                    shellLeft[i].recLeft.x = marineAnim.pos.x;
+                    shellLeft[i].recLeft.x = marineAnim.pos.x + marineAnim.rec.width / (float)0.5;
                     shellLeft[i].recLeft.y = marineAnim.pos.y + marineAnim.rec.height / 2;
                     shellLeft[i].activeLeft = true;
                     break;
@@ -494,61 +499,108 @@ int main() {
 
         // // Attaching the collision rectangle to the enemy's position
         // // The collision rectangle will make it possible for marine to defeat the enemy
-        // for (int i = 0; i < Enemy_Amount; i++){
-        //     enemy[i].EnemyCollision.x = enemy[i].EnemyPosition.x;
-        //     enemy[i].EnemyCollision.y = enemy[i].EnemyPosition.y;
-        //     enemy[i].EnemyCollision.width = enemy[i].EnemyFrameRec.width;
-        //     enemy[i].EnemyCollision.heigth = enemy[i].EnemyFrameRec.height;
-        // }
+        for (int i = 0; i < Enemy_Amount; i++){
+            enemy[i].EnemyCollision.x = enemy[i].EnemyPosition.x;
+            enemy[i].EnemyCollision.y = enemy[i].EnemyPosition.y;
+            enemy[i].EnemyCollision.width = enemy[i].EnemyFrameRec.width;
+            enemy[i].EnemyCollision.height = enemy[i].EnemyFrameRec.height;
+        }
 
-        // // Enemy A.I and enemy movement with Animation
-        // // Move Right
-        // for (int i = 0; i < Enemy_Amount; i++){
+        // Enemy A.I and enemy movement with Animation
+        // Move Right
+        for (int i = 0; i < Enemy_Amount; i++){
 
-        //     if (enemy[i].active && marine_and_enemy_Collide){
-        //         // move enemy rightward
-        //         if (position.x > enemy[i].EnemyPosition.x){
-        //             enemy[i].EnemyPosition.x += 1;
-        //             enemy[i].EnemyFrameCounter++;
+            if (enemy[i].active && marine_and_enemy_Collide){
+                // move enemy rightward
+                if (marineAnim.pos.x > enemy[i].EnemyPosition.x){
+                    enemy[i].EnemyPosition.x += 1;
+                    enemy[i].EnemyFrameCounter++;
 
-        //             if (enemy[i].EnemyFrameCounter >= (60/enemy[i].EnemyFrameSpeed)){
-        //                 enemy[i].EnemyFrameCounter = 0;
-        //                 enemy[i].EnemyCurrentFrame++;
+                    if (enemy[i].EnemyFrameCounter >= (60/enemy[i].EnemyFrameSpeed)){
+                        enemy[i].EnemyFrameCounter = 0;
+                        enemy[i].EnemyCurrentFrame++;
 
-        //                 if(enemy[i].EnemyCurrentFrame > 1) {
-        //                     enemy[i].EnemyCurrentFrame = 0;
-        //                 }
-
-        //                 enemy[i].EnemyFrameRec.x = (float)enemy[i].EnemyCurrentFrame * Enemy.width;
-        //             }
-        //         }
-        //     }
-        // }
+                        if(enemy[i].EnemyCurrentFrame > 1) {
+                            enemy[i].EnemyCurrentFrame = 0;
+                        }
+                        // this part helps to hide the frames
+                        enemy[i].EnemyFrameRec.x = (float)enemy[i].EnemyCurrentFrame * demon.width/4;
+                    }
+                }
+            }
+        }
 
 
         // // Move Left
-        // for (int i = 0; i < Enemy_Amount; i++){
+        for (int i = 0; i < Enemy_Amount; i++){
 
-        //     if (enemy[i].active && !marine_and_enemy_Collide){
-        //         // move enemy rightward
-        //         if (position.x < enemy[i].EnemyPosition.x && !marine_and_enemy_Collide){
+            if (enemy[i].active && !marine_and_enemy_Collide){
+                // move enemy rightward
+                if (marineAnim.pos.x < enemy[i].EnemyPosition.x && !marine_and_enemy_Collide){
 
-        //             enemy[i].EnemyPosition.x -= 1;
-        //             enemy[i].EnemyFrameCounter++;
+                    enemy[i].EnemyPosition.x -= 1;
+                    enemy[i].EnemyFrameCounter++;
 
-        //             if (enemy[i].EnemyFrameCounter >= (60/enemy[i].EnemyFrameSpeed)){
-        //                 enemy[i].EnemyFrameCounter = 0;
-        //                 enemy[i].EnemyCurrentFrame++;
+                    if (enemy[i].EnemyFrameCounter >= (60/enemy[i].EnemyFrameSpeed)){
+                        enemy[i].EnemyFrameCounter = 0;
+                        enemy[i].EnemyCurrentFrame++;
 
-        //                 if(enemy[i].EnemyCurrentFrame > 1) {
-        //                     enemy[i].EnemyCurrentFrame = 0;
-        //                 }
-        //                 // hide frames
-        //                 enemy[i].EnemyFrameRec.x = (float)enemy[i].EnemyCurrentFrame * Enemy.width;
-        //             }
-        //         }
-        //     }
-        // }
+                        if(enemy[i].EnemyCurrentFrame > 1) {
+                            enemy[i].EnemyCurrentFrame = 0;
+                        }
+                        // hide frames
+                        enemy[i].EnemyFrameRec.x = (float)enemy[i].EnemyCurrentFrame * demon.width/4;
+                    }
+                }
+            }
+        }
+
+
+        // Check collisions with enemy and shells coming from the rightward direction
+
+        for (int i = 0; i < shell_num; i++){
+
+            if ((shell[i].active)){
+                
+                for (int a = 0; a < Enemy_Amount; a++) {
+                    
+                    if (enemy[a].active && CheckCollisionRecs(shell[i].rec, enemy[a].EnemyCollision)){
+                        
+                        shell[i].active = false;
+                        shell[i].lifeSpawn = 0;
+                        enemy[a].active = false;
+                        // enemy[a].EnemyPosition.x = 1200;
+                    }
+                }
+            }
+        }
+
+
+        // Check collisions with enemy and shells coming from the leftward direction
+
+        for (int i = 0; i < shell_left_num; i++){
+
+            if ((shellLeft[i].activeLeft)){
+                
+                for (int a = 0; a < Enemy_Amount; a++) {
+                    
+                    if (enemy[a].active && CheckCollisionRecs(shellLeft[i].recLeft, enemy[a].EnemyCollision)){
+                        
+                        shellLeft[i].activeLeft = false;
+                        shellLeft[i].lifeSpawnLeft = 0;
+                        enemy[a].active = false;
+                        // enemy[a].EnemyPosition.x = -1200;
+                    }
+                }
+            }
+        }
+
+        // Draw Enemy
+        for (int i = 0; i < Enemy_Amount; i++){
+            if (enemy[i].active) {
+                // DrawTextureRec(Enemy, enemy[i].EnemyFrameRec, enemy[i].EnemyPosition, WHITE);
+            }
+        }
 
 
         // Call raylib's ClearBackground method, colour window white
@@ -557,19 +609,19 @@ int main() {
 
         
 
-        // // Enemy Code sourced from HE360, Raylib C/C++ Tutorial 6: Animated Enemy Sprites, A.I., Collisions, and How to  Defeat Your Enemy. https://www.youtube.com/watch?v=lCJrj_IEFlw
-        // // Collision
-        // if (marine_and_enemy_Collide) {
+        // Enemy Code sourced from HE360, Raylib C/C++ Tutorial 6: Animated Enemy Sprites, A.I., Collisions, and How to  Defeat Your Enemy. https://www.youtube.com/watch?v=lCJrj_IEFlw
+        // Collision
+        if (marine_and_enemy_Collide) {
 
-        //     DrawText("Hit", 10, 60, 20, WHITE);
+            DrawText("Hit", 10, 60, 20, WHITE);
 
-        //     for(int i = 0; i < Enemy_Amount; i++){
+            for(int i = 0; i < Enemy_Amount; i++){
 
-        //         if (enemy[i].EnemyCurrentFrame >= 2 ){
-        //             enemy[i].EnemyCurrentFrame = 2;
-        //         }
-        //     }
-        // }
+                if (enemy[i].EnemyCurrentFrame >= 2 ){
+                    enemy[i].EnemyCurrentFrame = 2;
+                }
+            }
+        }
 
 
         // if(collision){
