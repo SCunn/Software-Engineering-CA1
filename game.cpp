@@ -91,7 +91,7 @@ int main() {
 
     // Locate and load the texture file in the resources folder  // Marine.png original DOOM content taken from https://spritedatabase.net/file/555
     Texture2D marine = LoadTexture("resources/marine_walking.png");
-    Texture2D demon = LoadTexture("resources/demon_walking.png");
+    Texture2D demon = LoadTexture("resources/demon_move_attack_death.png");
 
     // Local variables
 
@@ -193,7 +193,7 @@ int main() {
         enemy[i].EnemyFrameRec.y = 0;//0.0f;
         // enemy[i].EnemyFrameRec.width = 70;
         // enemy[i].EnemyFrameRec.height = 111;
-        enemy[i].EnemyFrameRec.width = demon.width/4;
+        enemy[i].EnemyFrameRec.width = demon.width/20;
         enemy[i].EnemyFrameRec.height = demon.height;
 
         enemy[i].EnemyPosition.x = windowWidth- enemy[i].EnemyFrameRec.width;
@@ -210,7 +210,7 @@ int main() {
     // what is of interest here is the Enemy.width/4 part.
     // Enemy.width/4 part helps to hide unnecessary frames
     
-    // Rectangle Enemy_Rectangle_Made_For_Its_Width = { 0.0f, 0.0f, (float)Enemy.width/4, (float)Enemy.height };
+    // Rectangle Enemy_Rectangle_Made_For_Its_Width = { 0.0f, 0.0f, (float)Enemy.width/20, (float)Enemy.height };
 
 
         //  Variables for demon
@@ -532,12 +532,12 @@ int main() {
                         enemy[i].EnemyCurrentFrame++;
 
                         // if the frame count gets greater than 4
-                        if(enemy[i].EnemyCurrentFrame > 3) {
+                        if(enemy[i].EnemyCurrentFrame > 10) {
                             // set frame count back to zero in order to restart cycle through .png frames
-                            enemy[i].EnemyCurrentFrame = 0;
+                            enemy[i].EnemyCurrentFrame = 7;
                         }
                         // this part helps to hide the frames
-                        enemy[i].EnemyFrameRec.x = (float)enemy[i].EnemyCurrentFrame * demon.width/4;
+                        enemy[i].EnemyFrameRec.x = (float)enemy[i].EnemyCurrentFrame * demon.width/20;
                     }
                 }
             }
@@ -562,12 +562,12 @@ int main() {
                         enemy[i].EnemyCurrentFrame++;
 
                         // if the frame count gets greater than 4
-                        if(enemy[i].EnemyCurrentFrame > 3) {
+                        if(enemy[i].EnemyCurrentFrame > 6) {
                         // set frame count back to zero in order to restart cycle through .png frames
-                            enemy[i].EnemyCurrentFrame = 0;
+                            enemy[i].EnemyCurrentFrame = 3;
                         }
                         // hide frames
-                        enemy[i].EnemyFrameRec.x = (float)enemy[i].EnemyCurrentFrame * demon.width/4;
+                        enemy[i].EnemyFrameRec.x = (float)enemy[i].EnemyCurrentFrame * demon.width/20;
                     }
                 }
             }
