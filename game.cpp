@@ -98,7 +98,7 @@ int main() {
     // number of shells
     int shell_num{50};
     int shell_left_num{50};
-    int Enemy_Amount{0};
+    int Enemy_Amount{1};
 
     
 
@@ -173,8 +173,8 @@ int main() {
 
 
     // this stores the where the enemies are placed on screen when the game launches
-    int EnemyX = 100;
-    int EnemyY = 250;
+    // int EnemyX = 100;
+    // int EnemyY = 250;
 
 
     // Enemy Code sourced from HE360, Raylib C/C++ Tutorial 6: Animated Enemy Sprites, A.I., Collisions, and How to  Defeat Your Enemy. https://www.youtube.com/watch?v=lCJrj_IEFlw
@@ -187,13 +187,17 @@ int main() {
     // Using a for loop to create enemies will simplify the process of duplicating more enimies
     Enemy enemy[Enemy_Amount];
     for (int i = 0; i < Enemy_Amount; i++){
-        enemy[i].EnemyPosition = (Vector2){EnemyX, EnemyY};
-        enemy[i].EnemyFrameRec.x = 290.0f;
-        enemy[i].EnemyFrameRec.y = 0.0f;
+        // enemy[i].EnemyPosition = (Vector2){EnemyX, EnemyY};
+
+        enemy[i].EnemyFrameRec.x = 0;//290.0f;
+        enemy[i].EnemyFrameRec.y = 0;//0.0f;
         // enemy[i].EnemyFrameRec.width = 70;
         // enemy[i].EnemyFrameRec.height = 111;
         enemy[i].EnemyFrameRec.width = demon.width/4;
         enemy[i].EnemyFrameRec.height = demon.height;
+
+        enemy[i].EnemyPosition.x = windowWidth- enemy[i].EnemyFrameRec.width;
+        enemy[i].EnemyPosition.y = windowHeight- enemy[i].EnemyFrameRec.height;
 
         enemy[i].active = true;
         enemy[i].EnemyFrameCounter = 0;
@@ -272,6 +276,8 @@ int main() {
 	        marineAnim.rec.width	
 	    };
 
+
+
         // if(CheckCollisionRecs(marineRec, enemy[i].EnemyCollision)){
 	    // 	// collision = true;
 	    // }
@@ -281,6 +287,7 @@ int main() {
         for (int i = 0; i < Enemy_Amount; i++){
             marine_and_enemy_Collide = CheckCollisionRecs(marineRec, enemy[i].EnemyCollision);
         }
+
 
 
 
@@ -510,17 +517,23 @@ int main() {
         // Move Right
         for (int i = 0; i < Enemy_Amount; i++){
 
-            if (enemy[i].active && marine_and_enemy_Collide){
+            if (enemy[i].active && !marine_and_enemy_Collide){
+                    
                 // move enemy rightward
-                if (marineAnim.pos.x > enemy[i].EnemyPosition.x){
+                if (marineAnim.pos.x > enemy[i].EnemyPosition.x ){
+                    
+                    
                     enemy[i].EnemyPosition.x += 1;
                     enemy[i].EnemyFrameCounter++;
+                    PlaySound(growl);
 
                     if (enemy[i].EnemyFrameCounter >= (60/enemy[i].EnemyFrameSpeed)){
                         enemy[i].EnemyFrameCounter = 0;
                         enemy[i].EnemyCurrentFrame++;
 
-                        if(enemy[i].EnemyCurrentFrame > 1) {
+                        // if the frame count gets greater than 4
+                        if(enemy[i].EnemyCurrentFrame > 3) {
+                            // set frame count back to zero in order to restart cycle through .png frames
                             enemy[i].EnemyCurrentFrame = 0;
                         }
                         // this part helps to hide the frames
@@ -537,15 +550,20 @@ int main() {
             if (enemy[i].active && !marine_and_enemy_Collide){
                 // move enemy rightward
                 if (marineAnim.pos.x < enemy[i].EnemyPosition.x && !marine_and_enemy_Collide){
-
+                    
+                    // enemy[i].EnemyFrameRec.width = demon.width/4;
+                    
                     enemy[i].EnemyPosition.x -= 1;
                     enemy[i].EnemyFrameCounter++;
+                    PlaySound(growl);
 
                     if (enemy[i].EnemyFrameCounter >= (60/enemy[i].EnemyFrameSpeed)){
                         enemy[i].EnemyFrameCounter = 0;
                         enemy[i].EnemyCurrentFrame++;
 
-                        if(enemy[i].EnemyCurrentFrame > 1) {
+                        // if the frame count gets greater than 4
+                        if(enemy[i].EnemyCurrentFrame > 3) {
+                        // set frame count back to zero in order to restart cycle through .png frames
                             enemy[i].EnemyCurrentFrame = 0;
                         }
                         // hide frames
@@ -568,8 +586,11 @@ int main() {
                         
                         shell[i].active = false;
                         shell[i].lifeSpawn = 0;
-                        enemy[a].active = false;
-                        // enemy[a].EnemyPosition.x = 1200;
+                        // enemy[a].active = false;
+                        DrawText("Demon Hit", 10, 60, 20, WHITE);
+                        enemy[a].EnemyPosition.x = 800;
+                            
+                        
                     }
                 }
             }
@@ -588,17 +609,24 @@ int main() {
                         
                         shellLeft[i].activeLeft = false;
                         shellLeft[i].lifeSpawnLeft = 0;
-                        enemy[a].active = false;
-                        // enemy[a].EnemyPosition.x = -1200;
+                        // enemy[a].active = false;
+                        DrawText("Demon Hit", 10, 60, 20, WHITE);
+                        enemy[a].EnemyPosition.x = -100;
+                            
+                        
+                        
                     }
                 }
             }
         }
 
+        DrawTextureRec(marine,marineAnim.rec,marineAnim.pos,WHITE);
+
         // Draw Enemy
         for (int i = 0; i < Enemy_Amount; i++){
             if (enemy[i].active) {
-                // DrawTextureRec(Enemy, enemy[i].EnemyFrameRec, enemy[i].EnemyPosition, WHITE);
+                DrawTextureRec(demon, enemy[i].EnemyFrameRec, enemy[i].EnemyPosition, WHITE);
+                
             }
         }
 
@@ -617,8 +645,8 @@ int main() {
 
             for(int i = 0; i < Enemy_Amount; i++){
 
-                if (enemy[i].EnemyCurrentFrame >= 2 ){
-                    enemy[i].EnemyCurrentFrame = 2;
+                if (enemy[i].EnemyCurrentFrame >= 1 ){
+                    enemy[i].EnemyCurrentFrame = 1;
                 }
             }
         }
@@ -626,7 +654,7 @@ int main() {
 
         // if(collision){
         //     // ClearBackground(RED);
-            DrawTextureRec(marine,marineAnim.rec,marineAnim.pos,WHITE);
+            // DrawTextureRec(marine,marineAnim.rec,marineAnim.pos,WHITE);
         //     // Draw the demon
         //     // DrawTextureRec(demon, demonRec, demonPos, WHITE);
 
@@ -656,11 +684,13 @@ int main() {
         EndDrawing();
     }
         UnloadTexture(marine);
-        // UnloadTexture(demon);
+        UnloadTexture(demon);
         // UnloadTexture(shell);
 
         CloseAudioDevice(); 
         CloseWindow();
+
+        return 0;
 
 }
 
