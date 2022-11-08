@@ -1,6 +1,7 @@
 // CA1 - Shane Cunningham
 // import raylib library
 #include "raylib.h"
+#include <iostream>
 
 // #define PLAYER_MAX_SHELLS  1
 
@@ -49,6 +50,10 @@ struct Shells_Left {
 typedef struct Enemy{
     // Used to determine the state of enemy
     bool active;
+    // Used to determine if enemy is dying
+    bool dying;
+    // dying counter
+    int dyingCounter;
     // collisions will happen with frameRec
     Rectangle EnemyFrameRec;
     // collision outcomes are determind from here
@@ -98,7 +103,7 @@ int main() {
     // number of shells
     int shell_num{50};
     int shell_left_num{50};
-    int Enemy_Amount{1};
+    int Enemy_Amount{10};
 
     
 
@@ -131,6 +136,10 @@ int main() {
     bool right;
     // marine facing left
     bool left;
+    // bool to see if marine character is active
+    bool marine_active = true;
+
+    int life_bar = 200;
 
     // marines shells/ bullets rightward
     Shells shell[shell_num];
@@ -189,8 +198,8 @@ int main() {
     for (int i = 0; i < Enemy_Amount; i++){
         // enemy[i].EnemyPosition = (Vector2){EnemyX, EnemyY};
 
-        enemy[i].EnemyFrameRec.x = 0;//290.0f;
-        enemy[i].EnemyFrameRec.y = 0;//0.0f;
+        enemy[i].EnemyFrameRec.x = 290.0f;
+        enemy[i].EnemyFrameRec.y = 0.0f;
         // enemy[i].EnemyFrameRec.width = 70;
         // enemy[i].EnemyFrameRec.height = 111;
         enemy[i].EnemyFrameRec.width = demon.width/20;
@@ -200,33 +209,36 @@ int main() {
         enemy[i].EnemyPosition.y = windowHeight- enemy[i].EnemyFrameRec.height;
 
         enemy[i].active = true;
+        enemy[i].dying = false;
+        enemy[i].dyingCounter = 0;
         enemy[i].EnemyFrameCounter = 0;
         enemy[i].EnemyFrameSpeed = 8;
         enemy[i].EnemyCurrentFrame = 0;
 
     }
 
+
     // This Rectangle is used to help with the invisable animation rectangle regulator
     // what is of interest here is the Enemy.width/4 part.
     // Enemy.width/4 part helps to hide unnecessary frames
     
-    // Rectangle Enemy_Rectangle_Made_For_Its_Width = { 0.0f, 0.0f, (float)Enemy.width/20, (float)Enemy.height };
+    // Rectangle Enemy_Rectangle_Made_For_Its_Width = { 0.0f, 0.0f, (float)demon.width/20, (float)demon.height };
 
 
-        //  Variables for demon
-    Rectangle demonRec;
-    demonRec.width = demon.width/4;
-    demonRec.height = demon.height; 
-    demonRec.x = 0;
-    demonRec.y = 0;
-    Vector2 demonPos; 
-    demonPos.x = windowWidth- demonRec.width;
-    demonPos.y = windowHeight - demonRec.height;
+    //     //  Variables for demon
+    // Rectangle demonRec;
+    // demonRec.width = demon.width/4;
+    // demonRec.height = demon.height; 
+    // demonRec.x = 0;
+    // demonRec.y = 0;
+    // Vector2 demonPos; 
+    // demonPos.x = windowWidth- demonRec.width;
+    // demonPos.y = windowHeight - demonRec.height;
 
     Sound growl = LoadSound("resources/angry-beast.wav");
     
-    // demon Velocity
-    int demonVel{-200};
+    // // demon Velocity
+    // int demonVel{-200};
 
     // --------------------------------------------------------------------------------------
     //                                  Game Physics Variables
@@ -247,7 +259,7 @@ int main() {
     int speed{115};
     
     // boolean value to determine if character has had a collision or not, set as a null value
-    bool collision{};
+    // bool collision{};
     bool marine_and_enemy_Collide;
 
 
@@ -299,6 +311,18 @@ int main() {
         //                                       Marine 
         // -----------------------------------------------------------------------
 
+        // Draw Life Bar for Marine
+        DrawRectangle(15,20,200,12,LIGHTGRAY);
+        DrawRectangle(15,20,life_bar,12,RED);
+        DrawRectangleLines(15,20,200,12,GRAY);
+        DrawText("LIFE",100,22,10,BLACK);
+
+
+        if(marine_active == true){
+            // Call DrawTextureRec() method from the raylib.h library and include the Texture2D texture, Rectangle source, Vector2 position, Color tint
+            // Draw the marine for the game
+            DrawTextureRec(marine,marineAnim.rec,marineAnim.pos,WHITE);
+        }
 
         // stop marine from sticking to top and bottom of game screen
         // if statment conditional Code sourced from JonesRepo, Pong-Tutorial, https://github.com/JonesRepo/Pong-Tutorial , Rights: MIT 
@@ -586,6 +610,10 @@ int main() {
                         
                         shell[i].active = false;
                         shell[i].lifeSpawn = 0;
+                        enemy[i].dying = true;
+                        if(enemy[i].dying == true){
+
+                        }
                         // enemy[a].active = false;
                         DrawText("Demon Hit", 10, 60, 20, WHITE);
                         enemy[a].EnemyPosition.x = 800;
@@ -620,7 +648,7 @@ int main() {
             }
         }
 
-        DrawTextureRec(marine,marineAnim.rec,marineAnim.pos,WHITE);
+        
 
         // Draw Enemy
         for (int i = 0; i < Enemy_Amount; i++){
@@ -639,15 +667,49 @@ int main() {
 
         // Enemy Code sourced from HE360, Raylib C/C++ Tutorial 6: Animated Enemy Sprites, A.I., Collisions, and How to  Defeat Your Enemy. https://www.youtube.com/watch?v=lCJrj_IEFlw
         // Collision
-        if (marine_and_enemy_Collide) {
 
-            DrawText("Hit", 10, 60, 20, WHITE);
+        for(int i = 0; i < marine_and_enemy_Collide; i++){
+                life_bar-- ;
+                
+                std::cout << life_bar << "\n";
+                 break;
+        }
+        // if (marine_and_enemy_Collide) {
+            
+        if (life_bar == 0){
+            marine_active = false;
+        }
+        // else{
+        //     //     marine_active = false;
+        //     // }
+        //     // marine_active = false;
+        //     // for(int i = 0; i < Enemy_Amount; i++){
+        //     //     if(enemy[i].active == true){enemy[i].active = false;}
+        //     // }
 
-            for(int i = 0; i < Enemy_Amount; i++){
+        //     // ClearBackground(RED);
 
-                if (enemy[i].EnemyCurrentFrame >= 1 ){
-                    enemy[i].EnemyCurrentFrame = 1;
-                }
+        //     // DrawText("You Are Dead!", 10, 60, 20, WHITE);
+
+        //     // DrawText("Hit", 10, 60, 20, WHITE);
+
+        //     // for(int i = 0; i < Enemy_Amount; i++){
+
+        //     //     if (enemy[i].EnemyCurrentFrame >= 1 ){
+        //     //         enemy[i].EnemyCurrentFrame = 1;
+        //     //     }
+        //     // }
+          
+        // } /*else if(IsKeyPressed(KEY_ENTER)){
+        //     marine_active = true;
+        // }*/
+
+
+     
+
+        if(Enemy_Amount !=0){
+            for(int i = 0 ; i < Enemy_Amount; i++){
+            enemy[i].active = true;
             }
         }
 
@@ -685,7 +747,7 @@ int main() {
     }
         UnloadTexture(marine);
         UnloadTexture(demon);
-        // UnloadTexture(shell);
+        
 
         CloseAudioDevice(); 
         CloseWindow();
