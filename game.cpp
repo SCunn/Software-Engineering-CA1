@@ -7,6 +7,8 @@
 
 // #define PLAYER_MAX_SHELLS_Left  1
 
+#define MAX_ENEMIES 200
+
 // --------------------------------------------------------------------------------------------------------
 //                                          Structures 
 // --------------------------------------------------------------------------------------------------------
@@ -23,6 +25,8 @@ struct Anim {
     float updateTime;
     // float runningTime: float to contain the running time data
     float runningTime;
+
+    Vector2 speed;
 };
 
 // marines shells 
@@ -95,7 +99,7 @@ int main() {
     // --------------------------------------------------------------------------------
 
     // Locate and load the texture file in the resources folder  // Marine.png original DOOM content taken from https://spritedatabase.net/file/555
-    Texture2D marine = LoadTexture("resources/marine_walking.png");
+    Texture2D marine = LoadTexture("resources/space-marine-run.png");
     Texture2D demon = LoadTexture("resources/demon_move_attack_death.png");
 
     // Local variables
@@ -103,7 +107,8 @@ int main() {
     // number of shells
     int shell_num{50};
     int shell_left_num{50};
-    int Enemy_Amount{10};
+    int Enemy_Amount{200};
+    int Score_Count{0};
 
     
 
@@ -114,7 +119,7 @@ int main() {
     // Call struct Anim, create class marineAnim
     Anim marineAnim;
     // set rectangle width equal to Texture2d marine width (png image) and divide into 4 frames, This is used to contain the sprites
-    marineAnim.rec.width = marine.width/4; 
+    marineAnim.rec.width = marine.width/11; 
     // set rectangle width equal to Texture2d marine height (png image), This will be the sprite height 
     marineAnim.rec.height = marine.height;
     // set rectangle x and y axis to 0, data for the rectangles will be stored in these two variables
@@ -138,6 +143,11 @@ int main() {
     bool left;
     // bool to see if marine character is active
     bool marine_active = true;
+
+    marineAnim.speed.x = 115;
+    marineAnim.speed.y = 0;
+
+
 
     int life_bar = 200;
 
@@ -235,6 +245,7 @@ int main() {
     // demonPos.x = windowWidth- demonRec.width;
     // demonPos.y = windowHeight - demonRec.height;
 
+  
     Sound growl = LoadSound("resources/angry-beast.wav");
     
     // // demon Velocity
@@ -256,11 +267,13 @@ int main() {
     bool IsJumping = false;
 
     // integer to move sprite
-    int speed{115};
+    // int speed{115};
     
     // boolean value to determine if character has had a collision or not, set as a null value
     // bool collision{};
     bool marine_and_enemy_Collide;
+    // This constant character type variable will contain the text concerned with the games outcome
+    const char* Game_Over_Text = nullptr;
 
 
 
@@ -315,7 +328,12 @@ int main() {
         DrawRectangle(15,20,200,12,LIGHTGRAY);
         DrawRectangle(15,20,life_bar,12,RED);
         DrawRectangleLines(15,20,200,12,GRAY);
-        DrawText("LIFE",100,22,10,BLACK);
+        DrawText("HEALTH",100,22,10,BLACK);
+
+        DrawRectangle(windowWidth - 215,20,200,12,LIGHTGRAY);
+        DrawRectangle(windowWidth - 215,20,Enemy_Amount,12,RED);
+        DrawRectangleLines(windowWidth - 215,20,200,12,GRAY);
+        DrawText("DEMONS",windowWidth -135,22,10,BLACK);
 
 
         if(marine_active == true){
@@ -326,8 +344,8 @@ int main() {
 
         // stop marine from sticking to top and bottom of game screen
         // if statment conditional Code sourced from JonesRepo, Pong-Tutorial, https://github.com/JonesRepo/Pong-Tutorial , Rights: MIT 
-        if (marineAnim.pos.y  > GetScreenHeight()){
-            marineAnim.pos.y = GetScreenHeight();
+        if (marineAnim.pos.y  > windowHeight){
+            marineAnim.pos.y = windowHeight;
         };
         ////////////////////////////// Make Character Jump - Y-AXIS //////////////////////////////
 
@@ -360,19 +378,20 @@ int main() {
         //---------------------------  Move to the Right  KEY_D --------------------------------------
         
         // When the D key is pressed and character is not jumping 
-        if(IsKeyDown(KEY_D) && !IsJumping){ 
+        if(IsKeyDown(KEY_D) /*&& !IsJumping*/){ 
             // then the marine position on the x-axis is equal to the speed variable multiplied by the deltaTime  
-            marineAnim.pos.x += speed*deltaTime;        // This uses addition to move the character right on the x axis to the speed set in the int variable above
+            marineAnim.pos.x += marineAnim.speed.x*deltaTime;        // This uses addition to move the character right on the x axis to the speed set in the int variable above
             // marine facing right is true
             right = 1;
             // marine facing left is false
             left = 0;
             // then the animation rectangle width is equal to reveresed (flip/change direction of frame)
-            // marine texture with its width divided into 4 frames
-            marineAnim.rec.width = -marine.width/4;
+            // marine texture with its width divided into 11 frames
+            marineAnim.rec.width = marine.width/11;
             
             // synchronise the marine animation runningtime equal to the deltaTime
             marineAnim.runningTime += deltaTime; 
+
 
             // If the marine Animation runningTime is Greater or Equal to the updateTime, then:
              if(marineAnim.runningTime >= marineAnim.updateTime){
@@ -382,8 +401,8 @@ int main() {
                 marineAnim.rec.x = marineAnim.frame* marineAnim.rec.width;
                 // Increment frame by 1, cycle through .png frames
                 marineAnim.frame++;
-                // if the frame count gets greater than 4
-             if (marineAnim.frame > 3){
+                // if the frame count gets greater than 11
+             if (marineAnim.frame > 10){
                 // set frame count back to zero in order to restart cycle through .png frames
                 marineAnim.frame = 0;
              }
@@ -401,11 +420,11 @@ int main() {
         //---------------------------  Move to the Left KEY_A --------------------------------------
 
         // When the A key is pressed and character is not jumping
-        if(IsKeyDown(KEY_A) && !IsJumping){
+        if(IsKeyDown(KEY_A) /*&& !IsJumping*/){
             // marineAnim.pos.x = marineAnim.pos.x - speed * deltaTime
-	        marineAnim.pos.x -= speed * deltaTime;          // This uses subtraction to move the character Left on the x axis to the speed set in the int variable above
+	        marineAnim.pos.x -= marineAnim.speed.x * deltaTime;          // This uses subtraction to move the character Left on the x axis to the speed set in the int variable above
 	        // marine texture with its width divided into 4 frames
-            marineAnim.rec.width = marine.width/4;
+            marineAnim.rec.width = -marine.width/11;
             // synchronise the marine animation runningtime equal to the deltaTime
             marineAnim.runningTime += deltaTime;
             // marine facing right is false
@@ -421,7 +440,7 @@ int main() {
                 // Increment frame by 1, cycle through .png frames
                 marineAnim.frame++;
                 // if the frame count gets greater than 4
-             if (marineAnim.frame > 3){
+             if (marineAnim.frame > 10){
                 // set frame count back to zero in order to restart cycle through .png frames
                 marineAnim.frame = 0;
              }
@@ -435,6 +454,14 @@ int main() {
              // then the marine animation rectangle x position = is equal to the marine animation frame multiplied by the rectangle width
             marineAnim.rec.x = marineAnim.frame * marineAnim.rec.width;
         }
+
+        // if(marineAnim.pos.x < windowWidth - marineAnim.rec.width){
+        //     marineAnim.speed.x = 0;
+        // }
+        
+                
+
+        
 
         //---------------------------  Shooting   -------------------------------------- 
         
@@ -454,7 +481,7 @@ int main() {
                 if (!shell[i].active && fire_rate % 90 == 0){
                     // add sfx here PlaySound(sound);
                     PlaySound(shotgun);
-                    shell[i].rec.x = marineAnim.pos.x + marineAnim.rec.width / (float)0.5;
+                    shell[i].rec.x = marineAnim.pos.x + marineAnim.rec.width /5;//(float)0.5;
                     shell[i].rec.y = marineAnim.pos.y + marineAnim.rec.height / 2;
                     shell[i].active = true;
                     break;
@@ -492,7 +519,7 @@ int main() {
                 if (!shellLeft[i].activeLeft && fire_rate % 90 == 0){
                     // add sfx here PlaySound(sound);
                     PlaySound(shotgun);
-                    shellLeft[i].recLeft.x = marineAnim.pos.x + marineAnim.rec.width / (float)0.5;
+                    shellLeft[i].recLeft.x = marineAnim.pos.x + marineAnim.rec.width /5; //(float)0.5;
                     shellLeft[i].recLeft.y = marineAnim.pos.y + marineAnim.rec.height / 2;
                     shellLeft[i].activeLeft = true;
                     break;
@@ -610,14 +637,19 @@ int main() {
                         
                         shell[i].active = false;
                         shell[i].lifeSpawn = 0;
-                        enemy[i].dying = true;
-                        if(enemy[i].dying == true){
+                        // enemy[i].dying = true;
+                        // if(enemy[i].dying == true){
 
-                        }
+                        // }
                         // enemy[a].active = false;
                         DrawText("Demon Hit", 10, 60, 20, WHITE);
-                        enemy[a].EnemyPosition.x = 800;
-                            
+                        Enemy_Amount--;
+                        if(Enemy_Amount == 0){
+                            Enemy_Amount = GetRandomValue(1,5);
+                            enemy[a].EnemyPosition.x = 800;
+                            Score_Count++;
+                        }
+                        std::cout << Score_Count << "\n";    
                         
                     }
                 }
@@ -639,7 +671,13 @@ int main() {
                         shellLeft[i].lifeSpawnLeft = 0;
                         // enemy[a].active = false;
                         DrawText("Demon Hit", 10, 60, 20, WHITE);
-                        enemy[a].EnemyPosition.x = -100;
+                        Enemy_Amount--;
+                        if(Enemy_Amount == 0){
+                            Enemy_Amount = GetRandomValue(1,5);
+                            Score_Count++;
+                            enemy[a].EnemyPosition.x = -100;
+                        }
+                        // enemy[a].EnemyPosition.x = -100;
                             
                         
                         
@@ -671,13 +709,30 @@ int main() {
         for(int i = 0; i < marine_and_enemy_Collide; i++){
                 life_bar-- ;
                 
-                std::cout << life_bar << "\n";
+                // std::cout << life_bar << "\n";
                  break;
         }
         // if (marine_and_enemy_Collide) {
-            
-        if (life_bar == 0){
-            marine_active = false;
+
+        // if(Enemy_Amount !=0){
+        //     for(int i = 0 ; i < Enemy_Amount; i++){
+        //     enemy[i].active = false;
+
+        //     std::cout << i << "\n";
+        //     }
+        // } 
+
+        // if (life_bar == 0){
+        //     marine_active = false;
+        // }
+
+        if (!marine_active){
+            Game_Over_Text ="You Are Dead! Press R To Play Again";
+        }
+
+        if (Game_Over_Text){
+            int textWidth = MeasureText(Game_Over_Text, 60);
+            DrawText(Game_Over_Text, GetScreenWidth() / 2 - textWidth / 2, GetScreenHeight() / 2 - 30, 60, YELLOW);
         }
         // else{
         //     //     marine_active = false;
@@ -707,11 +762,7 @@ int main() {
 
      
 
-        if(Enemy_Amount !=0){
-            for(int i = 0 ; i < Enemy_Amount; i++){
-            enemy[i].active = true;
-            }
-        }
+
 
 
         // if(collision){
