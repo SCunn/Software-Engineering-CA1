@@ -1,13 +1,14 @@
 // CA1 - Shane Cunningham
 // import raylib library
 #include "raylib.h"
-#include <iostream>
+
+// #include <iostream>
 
 // #define PLAYER_MAX_SHELLS  1
 
 // #define PLAYER_MAX_SHELLS_Left  1
 
-#define MAX_ENEMIES 200
+// #define MAX_ENEMIES 200
 
 // --------------------------------------------------------------------------------------------------------
 //                                          Structures 
@@ -52,7 +53,7 @@ struct Shells_Left {
 // Code sourced from HE360, Raylib C/C++ Tutorial 6: Animated Enemy Sprites, A.I., Collisions, and How to  Defeat Your Enemy. https://www.youtube.com/watch?v=lCJrj_IEFlw
 // enemy type definition struct
 typedef struct Enemy{
-    // Used to determine the state of enemy
+    // Used to determine the activity state of enemy
     bool active;
     // Used to determine if enemy is dying
     bool dying;
@@ -95,12 +96,17 @@ int main() {
     InitAudioDevice();
 
     // --------------------------------------------------------------------------------
-    //                          Game Characters / Sprites  
+    //                          Game Characters / Textures / Audio 
     // --------------------------------------------------------------------------------
 
     // Locate and load the texture file in the resources folder  // Marine.png original DOOM content taken from https://spritedatabase.net/file/555
     Texture2D marine = LoadTexture("resources/space-marine-run.png");
     Texture2D demon = LoadTexture("resources/demon_run.png");
+
+    // Audio
+    Music music = LoadMusicStream("resources/shane_cunningham_Bosca_ceoil_1.wav");
+    Sound shotgun = LoadSound("resources/266105__marregheriti__shotgun.wav");
+    Sound growl = LoadSound("resources/angry-beast.wav");
 
     // Local variables
 
@@ -181,7 +187,7 @@ int main() {
             shellLeft[i].lifeSpawnLeft = 0;
     }   
 
-        Sound shotgun = LoadSound("resources/266105__marregheriti__shotgun.wav");
+        
 
 
 
@@ -210,46 +216,27 @@ int main() {
 
         enemy[i].EnemyFrameRec.x = 290.0f;
         enemy[i].EnemyFrameRec.y = 0.0f;
-        // enemy[i].EnemyFrameRec.width = 70;
-        // enemy[i].EnemyFrameRec.height = 111;
+
         enemy[i].EnemyFrameRec.width = demon.width/10;
         enemy[i].EnemyFrameRec.height = demon.height;
 
         enemy[i].EnemyPosition.x = windowWidth- enemy[i].EnemyFrameRec.width;
         enemy[i].EnemyPosition.y = windowHeight- enemy[i].EnemyFrameRec.height;
-
+        // Used to determine the activity state of enemy
         enemy[i].active = true;
-        enemy[i].dying = false; // ?
-        enemy[i].dyingCounter = 0; // ?
+        // //used to determine when enemy is dying
+        // enemy[i].dying = false; // ?
+        // //used for when enemy is dying
+        // enemy[i].dyingCounter = 0; // ?
+        // FrameCounter holds information on what frame the enemy is on
         enemy[i].EnemyFrameCounter = 0;
-        enemy[i].EnemyFrameSpeed = 12;
+        // How fast the animation frame will move
+        enemy[i].EnemyFrameSpeed = 8;
+        // The current frame will keep track of which frame is currently being used
         enemy[i].EnemyCurrentFrame = 0;
 
     }
 
-
-    // This Rectangle is used to help with the invisable animation rectangle regulator
-    // what is of interest here is the Enemy.width/4 part.
-    // Enemy.width/4 part helps to hide unnecessary frames
-    
-    // Rectangle Enemy_Rectangle_Made_For_Its_Width = { 0.0f, 0.0f, (float)demon.width/20, (float)demon.height };
-
-
-    //     //  Variables for demon
-    // Rectangle demonRec;
-    // demonRec.width = demon.width/4;
-    // demonRec.height = demon.height; 
-    // demonRec.x = 0;
-    // demonRec.y = 0;
-    // Vector2 demonPos; 
-    // demonPos.x = windowWidth- demonRec.width;
-    // demonPos.y = windowHeight - demonRec.height;
-
-  
-    Sound growl = LoadSound("resources/angry-beast.wav");
-    
-    // // demon Velocity
-    // int demonVel{-200};
 
     // --------------------------------------------------------------------------------------
     //                                  Game Physics Variables
@@ -286,6 +273,9 @@ int main() {
     SetTargetFPS(60);
     // Create While loop, While WindowShouldClose is false, initiate methods within the while loop brackets
     while(!WindowShouldClose()){
+
+        UpdateMusicStream(music);
+        PlayMusicStream(music);
         // Get time in seconds for the last frame drawn (delta time)
         const float deltaTime{GetFrameTime()};
         // -------------------------------------------------------------------------------------------------
@@ -306,19 +296,19 @@ int main() {
 	        marineAnim.rec.height,
 	        marineAnim.rec.width	
 	    };
-
-
-
-        // if(CheckCollisionRecs(marineRec, enemy[i].EnemyCollision)){
-	    // 	// collision = true;
-	    // }
-
         // // Enemy Code sourced from HE360, Raylib C/C++ Tutorial 6: Animated Enemy Sprites, A.I., Collisions, and How to  Defeat Your Enemy. https://www.youtube.com/watch?v=lCJrj_IEFlw
 
+        // loop Enemy amount to get enemy[i]
         for (int i = 0; i < Enemy_Amount; i++){
+            // set the boolean value to store CheckCollisionRecs() method to check if there are collisions between marine rectangle and enemy rectangle
             marine_and_enemy_Collide = CheckCollisionRecs(marineRec, enemy[i].EnemyCollision);
+           
         }
-
+            // std::cout, part of the <iostream> library included at the start of the file
+            // it is used to log data results to the console, useful for debugging
+            // below logs data from marine_and_enemy_Collide value to console, useful for viewing data when game is running
+            // std::cout << marine_and_enemy_Collide << " :marine_and_enemy_Collide\n";
+            // output: 1 :marine_and_enemy_Collide or 0 :marine_and_enemy_Collide, 1 for collision, 0 for none
 
 
 
@@ -350,9 +340,9 @@ int main() {
 
         // stop marine from sticking to top and bottom of game screen
         // if statment conditional Code sourced from JonesRepo, Pong-Tutorial, https://github.com/JonesRepo/Pong-Tutorial , Rights: MIT 
-        if (marineAnim.pos.y  > windowHeight){
-            marineAnim.pos.y = windowHeight;
-        };
+        // if (marineAnim.pos.y  > windowHeight){
+        //     marineAnim.pos.y = windowHeight;
+        // };
         ////////////////////////////// Make Character Jump - Y-AXIS //////////////////////////////
 
         // if the marine's position on the y axis is greater than or equal to windowHeight - marine.height
@@ -429,7 +419,7 @@ int main() {
         if(IsKeyDown(KEY_A) /*&& !IsJumping*/){
             // marineAnim.pos.x = marineAnim.pos.x - speed * deltaTime
 	        marineAnim.pos.x -= marineAnim.speed.x * deltaTime;          // This uses subtraction to move the character Left on the x axis to the speed set in the int variable above
-	        // marine texture with its width divided into 4 frames
+	        // marine texture with its width divided into 11 frames
             marineAnim.rec.width = -marine.width/11;
             // synchronise the marine animation runningtime equal to the deltaTime
             marineAnim.runningTime += deltaTime;
@@ -483,13 +473,13 @@ int main() {
         
             // Shoot to the right of the x axis
 
-            if(IsKeyDown(KEY_S) && right){
+            if(IsKeyDown(KEY_RIGHT_CONTROL) && right){
                 fire_rate += 1;
                 for (int i = 0; i < shell_num; i++){
                     if (!shell[i].active && fire_rate % 90 == 0){
                         // add sfx here PlaySound(sound);
                         PlaySound(shotgun);
-                        shell[i].rec.x = marineAnim.pos.x + marineAnim.rec.width /5;//(float)0.5;
+                        shell[i].rec.x = marineAnim.pos.x + marineAnim.rec.width /5;
                         shell[i].rec.y = marineAnim.pos.y + marineAnim.rec.height / 2;
                         shell[i].active = true;
                         break;
@@ -521,7 +511,7 @@ int main() {
             }
 
             // Shoot to the left of the x axis
-            if(IsKeyDown(KEY_S) && left){
+            if(IsKeyDown(KEY_RIGHT_CONTROL) && left){
                 fire_rate += 1;
                 for (int i = 0; i < shell_left_num; i++){
                     if (!shellLeft[i].activeLeft && fire_rate % 90 == 0){
@@ -557,14 +547,11 @@ int main() {
         // Draw the marine for the game
         // DrawTextureRec(marine,marineAnim.rec,marineAnim.pos,WHITE);
 
-        // // add velocity to demon
-        // demonPos.x += demonVel * deltaTime;
-
-
         // // Enemy Code sourced from HE360, Raylib C/C++ Tutorial 6: Animated Enemy Sprites, A.I., Collisions, and How to  Defeat Your Enemy. https://www.youtube.com/watch?v=lCJrj_IEFlw
 
         // // Attaching the collision rectangle to the enemy's position
         // // The collision rectangle will make it possible for marine to defeat the enemy
+        // Use for loop to start looping through Enemy_amount
         for (int i = 0; i < Enemy_Amount; i++){
             enemy[i].EnemyCollision.x = enemy[i].EnemyPosition.x;
             enemy[i].EnemyCollision.y = enemy[i].EnemyPosition.y;
@@ -574,22 +561,24 @@ int main() {
 
         // Enemy A.I and enemy movement with Animation
         // Move Right
+        // Use for loop to start looping through Enemy_amount
         for (int i = 0; i < Enemy_Amount; i++){
-
+            // if enemy active and marine and enemy are not colliding
             if (enemy[i].active && !marine_and_enemy_Collide){
-                    
-                // move enemy rightward
-                if (marineAnim.pos.x > enemy[i].EnemyPosition.x ){
-                    
-                    
+                // if the marine position on x axis is greater than the enemies
+                if (marineAnim.pos.x > enemy[i].EnemyPosition.x){
+                // move enemy rightward towards marines position on the x axis
                     enemy[i].EnemyPosition.x += 1;
+                    // begin to increment the frame count in order to begin animating
                     enemy[i].EnemyFrameCounter++;
+                    // Call PlaySound Method from the raylib.h library, include variable connected to resources .wav file
                     PlaySound(growl);
-
+                    // if the enemies frame count is greater or equal to the 60 / enemy frame speed(8), another way of setting frame speed to 60 per second
                     if (enemy[i].EnemyFrameCounter >= (60/enemy[i].EnemyFrameSpeed)){
+                        // reset frame count to 0
                         enemy[i].EnemyFrameCounter = 0;
+                        // increment enemy current frame by 1
                         enemy[i].EnemyCurrentFrame++;
-
                         // if the frame count gets greater than 10
                         if(enemy[i].EnemyCurrentFrame > 9) {
                             // set frame count back to 6 in order to restart cycle through .png frames
@@ -604,20 +593,24 @@ int main() {
 
 
         // // Move Left
+        // Use for loop to start looping through Enemy_amount
         for (int i = 0; i < Enemy_Amount; i++){
-
+            // if enemy active and marine and enemy are not colliding
             if (enemy[i].active && !marine_and_enemy_Collide){
-                // move enemy rightward
-                if (marineAnim.pos.x < enemy[i].EnemyPosition.x && !marine_and_enemy_Collide){
-                    
-                    // enemy[i].EnemyFrameRec.width = demon.width/4;
-                    
+                // move enemy leftward
+                // if the marine position on x axis is less than the enemies 
+                if (marineAnim.pos.x < enemy[i].EnemyPosition.x){
+                    // move enemy left towards marines position on the x axis
                     enemy[i].EnemyPosition.x -= 1;
+                    // begin to increment the frame count in order to begin animating
                     enemy[i].EnemyFrameCounter++;
+                    // Call PlaySound Method from the raylib.h library, include variable connected to resources .wav file
                     PlaySound(growl);
-
+                    // if the enemies frame count is greater or equal to the 60 / enemy frame speed(8), another way of setting frame speed to 60 per second
                     if (enemy[i].EnemyFrameCounter >= (60/enemy[i].EnemyFrameSpeed)){
+                        // reset frame count to 0
                         enemy[i].EnemyFrameCounter = 0;
+                        // increment enemy current frame by 1
                         enemy[i].EnemyCurrentFrame++;
 
                         // if the frame count gets greater than 5
@@ -645,21 +638,15 @@ int main() {
                         
                         shell[i].active = false;
                         shell[i].lifeSpawn = 0;
-                        // enemy[i].dying = true;
-
-                        // PlaySound(growl);
-                        // if(enemy[i].dying == true){
-
-                        // }
                         // enemy[a].active = false;
-                        DrawText("Demon Hit", 10, 60, 20, WHITE);
+                        // decrease Enemy_Amount
                         Enemy_Amount--;
                         if(Enemy_Amount == 0 && !Game_Over_Text){
                             Enemy_Amount = GetRandomValue(1,5);
                             enemy[a].EnemyPosition.x = 800;
                             Score_Count++;
                         }
-                        std::cout << Score_Count << " :SCORE_COUNT\n";    
+                        // std::cout << Score_Count << " :SCORE_COUNT\n";    
                         
                     }
                 }
@@ -723,19 +710,16 @@ int main() {
                 // std::cout << life_bar << "\n";
                  break;
         }
-        // if (marine_and_enemy_Collide) {
-
-        // if(Enemy_Amount !=0){
-        //     for(int i = 0 ; i < Enemy_Amount; i++){
-        //     enemy[i].active = false;
-
-        //     std::cout << i << "\n";
-        //     }
-        // } 
+        // if collision between marine + enemy and marine active
+        if (marine_and_enemy_Collide && marine_active) {
+        //    Draw message
+            DrawText("Demons are draining your life!\n Move!!!",10, 60, 20, RED); 
+        } 
         // if the marines life bar is equal to zero
         if (life_bar == 0){
             // The marine is no longer active
             marine_active = false;
+            // loop throught the Enemy_Amount value to set enemy activity to false, making the demon disapeer
             for(int i = 0; i < Enemy_Amount; i++){
                 enemy[i].active = false;
             }
@@ -756,11 +740,14 @@ int main() {
             // Set Game over text to "You Win ! Max Score Achieved !"
             Game_Over_Text = "You Win ! Max Score Achieved !";
         }
+        //  Original Code sourced from JonesRepo, Pong-Tutorial, https://github.com/JonesRepo/Pong-Tutorial , Rights: MIT 
         //  if the Game_Over_Text contains either char values "You Are Dead!" or "You Win ! Max Score Achieved !"
         if (Game_Over_Text){
-            // 
+            // create int called textWidth, value will contain MeasureText method holding the Game_over_text and font size as parameters
             int textWidth = MeasureText(Game_Over_Text, 60);
+            // Draw game over text outcomes and place in large font in the center of the game screen
             DrawText(Game_Over_Text, GetScreenWidth() / 2 - textWidth / 3 + 10, GetScreenHeight() / 2 - 30, 40, YELLOW);
+            // 
             DrawText(replay, GetScreenWidth() / 2 - textWidth / 4, GetScreenHeight() / 2 + 50, 20, YELLOW);
         }
         // Restart Game
@@ -781,10 +768,10 @@ int main() {
             marine_active = true;
             // -------------------------- DEMON / ENEMY -------------------------------
             Score_Count = 0;
-            Enemy_Amount = 2;
+            Enemy_Amount = 1;
             for(int i = 0; i < Enemy_Amount; i++){
-                enemy[i].EnemyFrameRec.x = 290.0f;
-                enemy[i].EnemyFrameRec.y = 0.0f;
+                enemy[i].EnemyPosition.x = 750;
+                enemy[i].EnemyPosition.y;
                 enemy[i].active = true;
             }
 
