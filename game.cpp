@@ -104,10 +104,13 @@ int main() {
 
     // Local variables
 
-    // number of shells
+    // number of shells fired rightward
     int shell_num{50};
+    // number of shells fired rightward
     int shell_left_num{50};
+    // No of enemies, value shown in the DEMONS life bar
     int Enemy_Amount{200};
+    // score created when marine shoots demons
     int Score_Count{0};
 
     
@@ -143,12 +146,10 @@ int main() {
     bool left;
     // bool to see if marine character is active
     bool marine_active = true;
-
+    // speed of marine on x and y axis
     marineAnim.speed.x = 115;
     marineAnim.speed.y = 0;
-
-
-
+    // Marine life bar 
     int life_bar = 200;
 
     // marines shells/ bullets rightward
@@ -197,8 +198,7 @@ int main() {
 
 
     // Enemy Code sourced from HE360, Raylib C/C++ Tutorial 6: Animated Enemy Sprites, A.I., Collisions, and How to  Defeat Your Enemy. https://www.youtube.com/watch?v=lCJrj_IEFlw
-    // static Enemy will store the enemy Array
-    // static Variables are initialized only once as they are allocated space in separate static storage
+    // Enemy will store the enemy Array
     // Setting up the enemy's position and where they start
     // on screen, We are also setting up the enemy's invisable animation rectangle that hides
     // the other frames while a current animation is played. here we will set up 
@@ -219,8 +219,8 @@ int main() {
         enemy[i].EnemyPosition.y = windowHeight- enemy[i].EnemyFrameRec.height;
 
         enemy[i].active = true;
-        enemy[i].dying = false;
-        enemy[i].dyingCounter = 0;
+        enemy[i].dying = false; // ?
+        enemy[i].dyingCounter = 0; // ?
         enemy[i].EnemyFrameCounter = 0;
         enemy[i].EnemyFrameSpeed = 8;
         enemy[i].EnemyCurrentFrame = 0;
@@ -259,9 +259,9 @@ int main() {
     // the velocity is used to control the speed of the jump
     int velocity{20};
     // force of gravity in the game, brings player back to the ground
-    const int gravity{2000};
+    const int gravity{1800};
     // the height of the jump under the constraints of velocity and gravity
-    int jumpHeight{600};
+    int jumpHeight{650};
     // Boolean value to determine if the player is jumping or not, if the jump is true or false (0 or 1). 
     // set to false as default action
     bool IsJumping = false;
@@ -273,7 +273,13 @@ int main() {
     // bool collision{};
     bool marine_and_enemy_Collide;
     // This constant character type variable will contain the text concerned with the games outcome
-    const char* Game_Over_Text = nullptr;
+    // the null pointer is used here to point the Game_Over_Text value to a location that represents 
+    // invalid memory. A Null value is 0, but it is not an equivalant to the integer 0, both use 
+    // different memory locations. It is good practice to use nullptr on if a value is not pointing 
+    // to a valid memory address, this will help a program run more efficiently
+    const char* Game_Over_Text = nullptr; 
+    // char value that contains text to display when game is over
+    const char* replay = "Press R To Play Again";
 
 
 
@@ -439,7 +445,7 @@ int main() {
                 marineAnim.rec.x = marineAnim.frame* marineAnim.rec.width;
                 // Increment frame by 1, cycle through .png frames
                 marineAnim.frame++;
-                // if the frame count gets greater than 4
+                // if the frame count gets greater than 11
              if (marineAnim.frame > 10){
                 // set frame count back to zero in order to restart cycle through .png frames
                 marineAnim.frame = 0;
@@ -455,6 +461,7 @@ int main() {
             marineAnim.rec.x = marineAnim.frame * marineAnim.rec.width;
         }
 
+        // STOP MARINE FROM EXITING THE SCREEN EDGES
         // if(marineAnim.pos.x < windowWidth - marineAnim.rec.width){
         //     marineAnim.speed.x = 0;
         // }
@@ -467,78 +474,79 @@ int main() {
         
         
         // Draw Shells right
-        for (int i = 0; i < shell_num; i++){
-            if(shell[i].active){
-                DrawRectangleRec(shell[i].rec, shell[i].colour);
-            }
-        }
-
-        // Shoot to the right of the x axis
-
-        if(IsKeyDown(KEY_S) && right){
-            fire_rate += 1;
+        if(marine_active){
             for (int i = 0; i < shell_num; i++){
-                if (!shell[i].active && fire_rate % 90 == 0){
-                    // add sfx here PlaySound(sound);
-                    PlaySound(shotgun);
-                    shell[i].rec.x = marineAnim.pos.x + marineAnim.rec.width /5;//(float)0.5;
-                    shell[i].rec.y = marineAnim.pos.y + marineAnim.rec.height / 2;
-                    shell[i].active = true;
-                    break;
+                if(shell[i].active){
+                    DrawRectangleRec(shell[i].rec, shell[i].colour);
                 }
             }
-        }
+        
+            // Shoot to the right of the x axis
 
-
-        for (int i = 0; i < shell_num; i++){
-                if (shell[i].active) {
-                shell[i].rec.x += shell[i].shot_speed.x;
-
-                if (shell[i].rec.x <= 0) {
-                    shell[i].active = false;
-                    fire_rate = 0;
+            if(IsKeyDown(KEY_S) && right){
+                fire_rate += 1;
+                for (int i = 0; i < shell_num; i++){
+                    if (!shell[i].active && fire_rate % 90 == 0){
+                        // add sfx here PlaySound(sound);
+                        PlaySound(shotgun);
+                        shell[i].rec.x = marineAnim.pos.x + marineAnim.rec.width /5;//(float)0.5;
+                        shell[i].rec.y = marineAnim.pos.y + marineAnim.rec.height / 2;
+                        shell[i].active = true;
+                        break;
+                    }
                 }
-
-                
             }
-        }
+
+
+            for (int i = 0; i < shell_num; i++){
+                    if (shell[i].active) {
+                    shell[i].rec.x += shell[i].shot_speed.x;
+
+                    if (shell[i].rec.x <= 0) {
+                        shell[i].active = false;
+                        fire_rate = 0;
+                    }
+
+
+                }
+            }
 
         
 
-        // Draw Shells left
-        for (int i = 0; i < shell_left_num; i++){
-            if(shellLeft[i].activeLeft){
-                DrawRectangleRec(shellLeft[i].recLeft, shellLeft[i].colourLeft);
-            }
-        }
-
-        // Shoot to the left of the x axis
-        if(IsKeyDown(KEY_S) && left){
-            fire_rate += 1;
+            // Draw Shells left
             for (int i = 0; i < shell_left_num; i++){
-                if (!shellLeft[i].activeLeft && fire_rate % 90 == 0){
-                    // add sfx here PlaySound(sound);
-                    PlaySound(shotgun);
-                    shellLeft[i].recLeft.x = marineAnim.pos.x + marineAnim.rec.width /5; //(float)0.5;
-                    shellLeft[i].recLeft.y = marineAnim.pos.y + marineAnim.rec.height / 2;
-                    shellLeft[i].activeLeft = true;
-                    break;
+                if(shellLeft[i].activeLeft){
+                    DrawRectangleRec(shellLeft[i].recLeft, shellLeft[i].colourLeft);
                 }
             }
-        }
 
-
-        for (int i = 0; i < shell_num; i++){
-                if (shellLeft[i].activeLeft) {
-                shellLeft[i].recLeft.x -= shellLeft[i].shot_speedLeft.x;
-
-                if (shellLeft[i].recLeft.x <= 0) {
-                    shellLeft[i].activeLeft = false;
-                    fire_rate = 0;
+            // Shoot to the left of the x axis
+            if(IsKeyDown(KEY_S) && left){
+                fire_rate += 1;
+                for (int i = 0; i < shell_left_num; i++){
+                    if (!shellLeft[i].activeLeft && fire_rate % 90 == 0){
+                        // add sfx here PlaySound(sound);
+                        PlaySound(shotgun);
+                        shellLeft[i].recLeft.x = marineAnim.pos.x + marineAnim.rec.width /5; //(float)0.5;
+                        shellLeft[i].recLeft.y = marineAnim.pos.y + marineAnim.rec.height / 2;
+                        shellLeft[i].activeLeft = true;
+                        break;
+                    }
                 }
             }
-        }
 
+
+            for (int i = 0; i < shell_num; i++){
+                    if (shellLeft[i].activeLeft) {
+                    shellLeft[i].recLeft.x -= shellLeft[i].shot_speedLeft.x;
+
+                    if (shellLeft[i].recLeft.x <= 0) {
+                        shellLeft[i].activeLeft = false;
+                        fire_rate = 0;
+                    }
+                }
+            }
+        }   
 
         // -----------------------------------------------------------------------
         //                               Demon 
@@ -582,13 +590,13 @@ int main() {
                         enemy[i].EnemyFrameCounter = 0;
                         enemy[i].EnemyCurrentFrame++;
 
-                        // if the frame count gets greater than 4
+                        // if the frame count gets greater than 11
                         if(enemy[i].EnemyCurrentFrame > 10) {
-                            // set frame count back to zero in order to restart cycle through .png frames
+                            // set frame count back to 8 in order to restart cycle through .png frames
                             enemy[i].EnemyCurrentFrame = 7;
                         }
                         // this part helps to hide the frames
-                        enemy[i].EnemyFrameRec.x = (float)enemy[i].EnemyCurrentFrame * demon.width/20;
+                        enemy[i].EnemyFrameRec.x = enemy[i].EnemyCurrentFrame * demon.width/20;
                     }
                 }
             }
@@ -612,13 +620,13 @@ int main() {
                         enemy[i].EnemyFrameCounter = 0;
                         enemy[i].EnemyCurrentFrame++;
 
-                        // if the frame count gets greater than 4
+                        // if the frame count gets greater than 7
                         if(enemy[i].EnemyCurrentFrame > 6) {
-                        // set frame count back to zero in order to restart cycle through .png frames
+                        // set frame count back to 4 in order to restart cycle through .png frames
                             enemy[i].EnemyCurrentFrame = 3;
                         }
                         // hide frames
-                        enemy[i].EnemyFrameRec.x = (float)enemy[i].EnemyCurrentFrame * demon.width/20;
+                        enemy[i].EnemyFrameRec.x = enemy[i].EnemyCurrentFrame * demon.width/20;
                     }
                 }
             }
@@ -638,18 +646,20 @@ int main() {
                         shell[i].active = false;
                         shell[i].lifeSpawn = 0;
                         // enemy[i].dying = true;
+
+                        // PlaySound(growl);
                         // if(enemy[i].dying == true){
 
                         // }
                         // enemy[a].active = false;
                         DrawText("Demon Hit", 10, 60, 20, WHITE);
                         Enemy_Amount--;
-                        if(Enemy_Amount == 0){
+                        if(Enemy_Amount == 0 && !Game_Over_Text){
                             Enemy_Amount = GetRandomValue(1,5);
                             enemy[a].EnemyPosition.x = 800;
                             Score_Count++;
                         }
-                        std::cout << Score_Count << "\n";    
+                        std::cout << Score_Count << " :SCORE_COUNT\n";    
                         
                     }
                 }
@@ -669,10 +679,11 @@ int main() {
                         
                         shellLeft[i].activeLeft = false;
                         shellLeft[i].lifeSpawnLeft = 0;
+                        // PlaySound(growl);
                         // enemy[a].active = false;
                         DrawText("Demon Hit", 10, 60, 20, WHITE);
                         Enemy_Amount--;
-                        if(Enemy_Amount == 0){
+                        if(Enemy_Amount == 0 && !Game_Over_Text){
                             Enemy_Amount = GetRandomValue(1,5);
                             Score_Count++;
                             enemy[a].EnemyPosition.x = -100;
@@ -721,19 +732,67 @@ int main() {
         //     std::cout << i << "\n";
         //     }
         // } 
-
-        // if (life_bar == 0){
-        //     marine_active = false;
-        // }
-
+        // if the marines life bar is equal to zero
+        if (life_bar == 0){
+            // The marine is no longer active
+            marine_active = false;
+            for(int i = 0; i < Enemy_Amount; i++){
+                enemy[i].active = false;
+            }
+        }
+        //  if Marine is not active
         if (!marine_active){
-            Game_Over_Text ="You Are Dead! Press R To Play Again";
+            // Set Game over text to "You Are Dead!"
+            Game_Over_Text ="You Are Dead!";
+        }
+        //  if Score_Count is greater than value
+        if(Score_Count >= 10){
+            // The marine is no longer active
+            marine_active = false;
+
+            for(int i = 0; i < Enemy_Amount; i++){
+                enemy[i].active = false;
+            }
+            // Set Game over text to "You Win ! Max Score Achieved !"
+            Game_Over_Text = "You Win ! Max Score Achieved !";
+        }
+        //  if the Game_Over_Text contains either char values "You Are Dead!" or "You Win ! Max Score Achieved !"
+        if (Game_Over_Text){
+            // 
+            int textWidth = MeasureText(Game_Over_Text, 60);
+            DrawText(Game_Over_Text, GetScreenWidth() / 2 - textWidth / 3 + 10, GetScreenHeight() / 2 - 30, 40, YELLOW);
+            DrawText(replay, GetScreenWidth() / 2 - textWidth / 4, GetScreenHeight() / 2 + 50, 20, YELLOW);
+        }
+        // Restart Game
+        if(Game_Over_Text && IsKeyPressed(KEY_R)) {
+            // set Game_Over_Text char back to null
+            Game_Over_Text = nullptr;
+            // redraw original game state
+            // --------------------------- MARINE ----------------------------------------
+            // this will set the player charaters position on the X axis when the game begins
+            // the position x of the marine is equal to half of the windowWidth minus half of the rectangle width
+            marineAnim.pos.x = windowWidth/2 -marineAnim.rec.width/2;
+            // this will set the player charaters position on the Y axis when the game begins
+            // the position Y of the marine is equal to the windowHeight minus the rectangle height
+            marineAnim.pos.y = windowHeight - marineAnim.rec.height;
+            // Marine life bar 
+            life_bar = 200;
+            // bool to see if marine character is active
+            marine_active = true;
+            // -------------------------- DEMON / ENEMY -------------------------------
+            Score_Count = 0;
+            Enemy_Amount = 2;
+            for(int i = 0; i < Enemy_Amount; i++){
+                enemy[i].EnemyFrameRec.x = 290.0f;
+                enemy[i].EnemyFrameRec.y = 0.0f;
+                enemy[i].active = true;
+            }
+
+
         }
 
-        if (Game_Over_Text){
-            int textWidth = MeasureText(Game_Over_Text, 60);
-            DrawText(Game_Over_Text, GetScreenWidth() / 2 - textWidth / 2, GetScreenHeight() / 2 - 30, 60, YELLOW);
-        }
+
+         
         // else{
         //     //     marine_active = false;
         //     // }
