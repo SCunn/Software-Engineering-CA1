@@ -2,7 +2,7 @@
 // import raylib library
 #include "raylib.h"
 
-// #include <iostream>
+#include <iostream>
 
 // #define PLAYER_MAX_SHELLS  1
 
@@ -75,7 +75,12 @@ typedef struct Enemy{
 // Variable for the class
 } Enemy;
 
-
+// Create platform struct
+struct Platform {
+    Rectangle platform_rect;
+    bool active;
+    Vector2 platform_pos;
+};
 
 
 //---------------------------------------------------------------------------------------------------------
@@ -105,7 +110,9 @@ int main() {
 
     // Audio
     Music music = LoadMusicStream("resources/shane_cunningham_Bosca_ceoil_1.wav");
+    // shotgun.wav by Marregheriti sourced from https://freesound.org/people/Marregheriti/sounds/266105/
     Sound shotgun = LoadSound("resources/266105__marregheriti__shotgun.wav");
+
     Sound growl = LoadSound("resources/angry-beast.wav");
 
     // Local variables
@@ -147,9 +154,9 @@ int main() {
     // This variable wil contain the runningTime data, this is used in conjuction with the updateTime variable to regulate the animation speed
     marineAnim.runningTime = 0.0;
     // marine facing right
-    bool right;
+    bool right = 1;
     // marine facing left
-    bool left;
+    bool left = 0;
     // bool to see if marine character is active
     bool marine_active = true;
     // speed of marine on x and y axis
@@ -212,7 +219,6 @@ int main() {
     // Using a for loop to create enemies will simplify the process of duplicating more enimies
     Enemy enemy[Enemy_Amount];
     for (int i = 0; i < Enemy_Amount; i++){
-        // enemy[i].EnemyPosition = (Vector2){EnemyX, EnemyY};
 
         enemy[i].EnemyFrameRec.x = 290.0f;
         enemy[i].EnemyFrameRec.y = 0.0f;
@@ -237,6 +243,8 @@ int main() {
 
     }
 
+    bool Enemy_Active = true;
+
 
     // --------------------------------------------------------------------------------------
     //                                  Game Physics Variables
@@ -252,10 +260,18 @@ int main() {
     // Boolean value to determine if the player is jumping or not, if the jump is true or false (0 or 1). 
     // set to false as default action
     bool IsJumping = false;
+    // boolean to determine if on the floor
+    bool onfloor;
+    // collisions bool for platforms
+    bool collisions4platforms;
 
-    // integer to move sprite
-    // int speed{115};
-    
+    // ---------------------------------------------------------------------------------------
+    //                                  Platforms
+    // -------------------------------------------------------------------------------------
+    // Code sourced from HE360, Raylib C/C++ Tutorial 5: Jumping, Floors, and Platforms, https://www.youtube.com/watch?v=dPQ-fVijuiM
+
+    // Platforms,location ,width, height
+
     // boolean value to determine if character has had a collision or not, set as a null value
     // bool collision{};
     bool marine_and_enemy_Collide;
@@ -273,9 +289,16 @@ int main() {
     SetTargetFPS(60);
     // Create While loop, While WindowShouldClose is false, initiate methods within the while loop brackets
     while(!WindowShouldClose()){
-
+        // code sourced from raylib [audio] example - Music playing (streaming) Copyright (c) 2015-2022 Ramon Santamaria (@raysan5) https://github.com/raysan5/raylib/blob/master/examples/audio/audio_music_stream.c
         UpdateMusicStream(music);
         PlayMusicStream(music);
+
+        // Restart music playing (stop and play)
+        if (IsKeyPressed(KEY_P))
+        {
+            StopMusicStream(music);
+            PlayMusicStream(music);
+        }
         // Get time in seconds for the last frame drawn (delta time)
         const float deltaTime{GetFrameTime()};
         // -------------------------------------------------------------------------------------------------
@@ -687,13 +710,14 @@ int main() {
         
 
         // Draw Enemy
-        for (int i = 0; i < Enemy_Amount; i++){
-            if (enemy[i].active) {
-                DrawTextureRec(demon, enemy[i].EnemyFrameRec, enemy[i].EnemyPosition, WHITE);
-                
+        if(Enemy_Active){
+            for (int i = 0; i < Enemy_Amount; i++){
+                if (enemy[i].active) {
+                    DrawTextureRec(demon, enemy[i].EnemyFrameRec, enemy[i].EnemyPosition, WHITE);
+
+                }
             }
         }
-
 
         // Call raylib's ClearBackground method, colour window white
         ClearBackground(BLACK);
@@ -702,13 +726,15 @@ int main() {
         
 
         // Enemy Code sourced from HE360, Raylib C/C++ Tutorial 6: Animated Enemy Sprites, A.I., Collisions, and How to  Defeat Your Enemy. https://www.youtube.com/watch?v=lCJrj_IEFlw
-        // Collision
-
+        // --------------------------------------------------------------------------------------------------
+        //                                   Marine/Eenmy Collision Conditions
+        // --------------------------------------------------------------------------------------------------
+        
         for(int i = 0; i < marine_and_enemy_Collide; i++){
                 life_bar-- ;
                 
                 // std::cout << life_bar << "\n";
-                 break;
+                //  break;
         }
         // if collision between marine + enemy and marine active
         if (marine_and_enemy_Collide && marine_active) {
@@ -719,24 +745,32 @@ int main() {
         if (life_bar == 0){
             // The marine is no longer active
             marine_active = false;
+
+            Enemy_Active = false;
             // loop throught the Enemy_Amount value to set enemy activity to false, making the demon disapeer
-            for(int i = 0; i < Enemy_Amount; i++){
-                enemy[i].active = false;
-            }
+            // for(int i = 0; i < Enemy_Amount; i++){
+                // enemy[i].active = false;
+            // }
         }
+
+        // ---------------------------------------------------------------------------------------------------
+        //                                          End Game Conditions
+        // ---------------------------------------------------------------------------------------------------
         //  if Marine is not active
         if (!marine_active){
             // Set Game over text to "You Are Dead!"
             Game_Over_Text ="You Are Dead!";
         }
         //  if Score_Count is greater than value
-        if(Score_Count >= 10){
+        if(Score_Count >= 1000){
             // The marine is no longer active
             marine_active = false;
 
-            for(int i = 0; i < Enemy_Amount; i++){
-                enemy[i].active = false;
-            }
+            Enemy_Active = false;
+
+            // for(int i = 0; i < Enemy_Amount; i++){
+                // enemy[i].active = false;
+            // }
             // Set Game over text to "You Win ! Max Score Achieved !"
             Game_Over_Text = "You Win ! Max Score Achieved !";
         }
@@ -766,12 +800,17 @@ int main() {
             life_bar = 200;
             // bool to see if marine character is active
             marine_active = true;
+
+            Enemy_Active = true;
             // -------------------------- DEMON / ENEMY -------------------------------
             Score_Count = 0;
-            Enemy_Amount = 1;
+            Enemy_Amount = GetRandomValue(1,4);
+
             for(int i = 0; i < Enemy_Amount; i++){
+                enemy[i].EnemyFrameRec.x = 0.0f;
+                enemy[i].EnemyFrameRec.y = 0.0f;
                 enemy[i].EnemyPosition.x = 750;
-                enemy[i].EnemyPosition.y;
+                // enemy[i].EnemyPosition.y;
                 enemy[i].active = true;
             }
 
