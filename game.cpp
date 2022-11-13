@@ -1,20 +1,15 @@
-// CA1 - Shane Cunningham
+// CA1 - Shane Cunningham, November 2022
+// Sections of the original code sourced from Dr.Naoise Collins, DKIT
 // import raylib library
 #include "raylib.h"
-
+// import iostream, input output stream, this header file contains definitions of objects like cin, cout, cerr, etc.
 #include <iostream>
-
-
-// #define PLAYER_MAX_SHELLS  1
-
-// #define PLAYER_MAX_SHELLS_Left  1
-
-// #define MAX_ENEMIES 200
 
 // --------------------------------------------------------------------------------------------------------
 //                                          Structures 
 // --------------------------------------------------------------------------------------------------------
 
+// the original code sourced from Dr.Naoise Collins, DKIT
 // structs are used to group related variables to one place, each variable in the struct is known as a member 
 // struct Anim hold variables related to the animation logic
 struct Anim {
@@ -27,26 +22,32 @@ struct Anim {
     float updateTime;
     // float runningTime: float to contain the running time data
     float runningTime;
-
+    // speed variable for class
     Vector2 speed;
 };
-
+// the original code sourced from Dr.Naoise Collins, DKIT
 // marines shells 
 struct Shells {
+    // declare rec for Rectangle variables
     Rectangle rec;
+    // declere shot_speed for Vector2 x,y axis positional variables
     Vector2 shot_speed;
+    // declare color variable for class
     Color colour;
+    // declare bool to detect activity state for class
     bool active;
-    int lifeSpawn;
 };
 // Code sourced from HE360, Raylib C/C++ Tutorial 6: Animated Enemy Sprites, A.I., Collisions, and How to  Defeat Your Enemy. https://www.youtube.com/watch?v=lCJrj_IEFlw
 // marines shells left side
 struct Shells_Left {
+    // declare rec for Rectangle variables
     Rectangle recLeft;
+     // declere shot_speed for Vector2 x,y axis positional variables
     Vector2 shot_speedLeft;
+    // declare color variable for class
     Color colourLeft;
+    // declare bool to detect activity state for class
     bool activeLeft;
-    int lifeSpawnLeft;
 };
 
 
@@ -76,18 +77,18 @@ typedef struct Enemy{
 // Variable for the class
 } Enemy;
 
-// Create platform struct
-struct Platform {
-    Rectangle platform_rect;
-    bool active;
-    Vector2 platform_pos;
-};
+// // Create platform struct
+// struct Platform {
+//     Rectangle platform_rect;
+//     bool active;
+//     Vector2 platform_pos;
+// };
 
 
 //---------------------------------------------------------------------------------------------------------
 //                                      Program main entry point
 //---------------------------------------------------------------------------------------------------------
-
+// the original code sourced from Dr.Naoise Collins, DKIT
 // main c++ function that contains the game application between the curly brackets
 int main() {
 
@@ -105,10 +106,12 @@ int main() {
     //                          Game Characters / Textures / Audio 
     // --------------------------------------------------------------------------------
 
-    // Locate and load the texture file in the resources folder  // Marine.png original DOOM content taken from https://spritedatabase.net/file/555
+    // Locate and load the texture file in the resources folder  
+    //texture sourced from: Sideview Sci-Fi - Patreon Collection by ansimuz (no date) itch.io. Available at: https://ansimuz.itch.io/sideview-sci-fi (Accessed: 13 November 2022).
     Texture2D marine = LoadTexture("resources/space-marine-run.png");
+    // texture sourced from:  Nmn (2020) Monster mutant for FPS game, OpenGameArt.org. OpenGameArt.org. Available at: https://opengameart.org/content/monster-mutant-for-fps-game (Accessed: 10 November 2022).
     Texture2D demon = LoadTexture("resources/demon_run.png");
-    // Locate and load the texture file in the resources folder
+    //texture sourced from: Sideview Sci-Fi - Patreon Collection by ansimuz (no date) itch.io. Available at: https://ansimuz.itch.io/sideview-sci-fi (Accessed: 13 November 2022).
     Texture2D background = LoadTexture("resources/preview-bulkhead-walls-v2.png");
 
     // Audio
@@ -137,7 +140,7 @@ int main() {
     int Score_Count{0};
 
     
-
+    // the original code sourced from Dr.Naoise Collins, DKIT
     // --------------------------------------------------------------------------------
     //                                  Marine class 
     // --------------------------------------------------------------------------------
@@ -175,30 +178,43 @@ int main() {
     // Marine life bar 
     int life_bar = 200;
 
+    // Original code sourced from Dr.Naoise Collins, DKIT
     // marines shells/ bullets rightward
+    // create place to store the shell_num to be used in loops
     Shells shell[shell_num];
+    // loop through shell_num in order to add values to the class variables
     for (int i = 0; i < shell_num; i++){
+            // set the height and width of shell/bullet, the colour
             shell[i].rec.height = 2;
             shell[i].rec.width = 50;
             shell[i].colour = ORANGE;
+            // set the rectangle position of the shell on the x and y axis, set where shell is shot from
             shell[i].rec.x = (windowWidth/2) + (marineAnim.rec.width/2) - (shell[i].rec.width/2);
             shell[i].rec.y = (windowHeight - marineAnim.rec.height) - (shell[i].rec.height);
+            // set the speed of the shell
             shell[i].shot_speed.x = 100;
             shell[i].shot_speed.y = 100;
+            // set activity to false, until shell is fired
             shell[i].active = false;
             }
+            // fire rate set to zero. the fire rate determines the speed of how many shots can be fired
             int fire_rate = 0;
 
-    
+    // create place to store the shell_left_num to be used in loops
     Shells_Left shellLeft[shell_left_num];
+    // loop through shell_num in order to add values to the class variables
     for (int i = 0; i < shell_left_num; i++){
+            // set the height and width of shell/bullet, the colour
             shellLeft[i].recLeft.height = 2;
             shellLeft[i].recLeft.width = 50;
             shellLeft[i].colourLeft = ORANGE;
+            // set the rectangle position of the shell on the x and y axis, set where shell is shot from
             shellLeft[i].recLeft.x = (windowWidth/2) + (marineAnim.rec.width/2) - (shellLeft[i].recLeft.width/2);
             shellLeft[i].recLeft.y = (windowHeight - marineAnim.rec.height) - (shellLeft[i].recLeft.height);
+            // set the speed of the shell
             shellLeft[i].shot_speedLeft.x = 100;
             shellLeft[i].shot_speedLeft.y = 100;
+            // set activity to false, until shell is fired
             shellLeft[i].activeLeft = false;
     }   
 
@@ -212,28 +228,18 @@ int main() {
     // --------------------------------------------------------------------------------------
     
 
-
-    // this stores the where the enemies are placed on screen when the game launches
-    // int EnemyX = 100;
-    // int EnemyY = 250;
-
-
     // Enemy Code sourced from HE360, Raylib C/C++ Tutorial 6: Animated Enemy Sprites, A.I., Collisions, and How to  Defeat Your Enemy. https://www.youtube.com/watch?v=lCJrj_IEFlw
     // Enemy will store the enemy Array
-    // Setting up the enemy's position and where they start
-    // on screen, We are also setting up the enemy's invisable animation rectangle that hides
-    // the other frames while a current animation is played. here we will set up 
-    // whether the enemy is active or not, the frame counter, the frame speed and current frame.
-    // Using a for loop to create enemies will simplify the process of duplicating more enimies
     Enemy enemy[Enemy_Amount];
+    // Using a for loop to create enemies will simplify the process of duplicating more enimies
     for (int i = 0; i < Enemy_Amount; i++){
-
+    // Setting up the enemy's position and where they start on screen
         enemy[i].EnemyFrameRec.x = 290.0f;
         enemy[i].EnemyFrameRec.y = 0.0f;
-
+        // We are also setting up the enemy's invisable animation rectangle that hides
+        // the other frames while a current animation is played
         enemy[i].EnemyFrameRec.width = demon.width/10;
         enemy[i].EnemyFrameRec.height = demon.height;
-
         enemy[i].EnemyPosition.x = windowWidth- enemy[i].EnemyFrameRec.width;
         enemy[i].EnemyPosition.y = windowHeight- enemy[i].EnemyFrameRec.height;
         // Used to determine the activity state of enemy
@@ -250,13 +256,14 @@ int main() {
         enemy[i].EnemyCurrentFrame = 0;
 
     }
-
+    // set bool for enemy activity to true when game starts
     bool Enemy_Active = true;
 
 
     // --------------------------------------------------------------------------------------
     //                                  Game Physics Variables
     // --------------------------------------------------------------------------------------
+    // the original code sourced from Dr.Naoise Collins, DKIT
 
     //-------- variables for jumping --------------
     // the velocity is used to control the speed of the jump
@@ -269,9 +276,9 @@ int main() {
     // set to false as default action
     bool IsJumping = false;
     // boolean to determine if on the floor
-    bool onfloor;
-    // collisions bool for platforms
-    bool collisions4platforms;
+    // bool onfloor;
+    // // collisions bool for platforms
+    // bool collisions4platforms;
 
     // ---------------------------------------------------------------------------------------
     //                                  Platforms
@@ -301,12 +308,6 @@ int main() {
         UpdateMusicStream(music);
         PlayMusicStream(music);
 
-        // Restart music playing (stop and play)
-        if (IsKeyPressed(KEY_P))
-        {
-            StopMusicStream(music);
-            PlayMusicStream(music);
-        }
         // Get time in seconds for the last frame drawn (delta time)
         const float deltaTime{GetFrameTime()};
         // -------------------------------------------------------------------------------------------------
@@ -314,7 +315,6 @@ int main() {
         // -------------------------------------------------------------------------------------------------
         // Include Rectangle marineRec class to all for updates to the variables during the game runtime, 
         // used for game collisions
-
         Rectangle marineRec{
 	        marineAnim.pos.x,
 	        marineAnim.pos.y,
@@ -334,45 +334,56 @@ int main() {
             // below logs data from marine_and_enemy_Collide value to console, useful for viewing data when game is running
             // std::cout << marine_and_enemy_Collide << " :marine_and_enemy_Collide\n";
             // output: 1 :marine_and_enemy_Collide or 0 :marine_and_enemy_Collide, 1 for collision, 0 for none
-
+        // used for background Image
         float scrollingBack = 0.0f;
 
+        // Setup canvas (framebuffer) to start drawing
         BeginDrawing();
 
         //  ############################### Character Movement ###########################
-
         // ------------------------------------------------------------------------------
         //                                       Marine 
         // ------------------------------------------------------------------------------
 
-        // Call raylib's ClearBackground method, colour window white
+        // Call raylib's ClearBackground method, colour window white used to clear frames from sprites
         ClearBackground(BLACK);
-        // DrawTexture(background,windowWidth,windowHeight,WHITE);
-
+        // DrawT Background sourced from raylib [textures] example - Background scrolling Example originally created with raylib 2.0, last time updated with raylib 2.5 Example licensed under an unmodified zlib/libpng license, which is an OSI-certified,BSD-like license that allows static linking with closed source software Copyright (c) 2019-2022 Ramon Santamaria (@raysan5)
         DrawTextureEx(background, (Vector2){ scrollingBack, 20 }, 0.0f, 2.0f, WHITE);
         
         // Draw Life Bar for Marine
-        DrawRectangle(15,20,200,12,LIGHTGRAY);
+        // if the life bar is greater than 200
+        if(life_bar > 200){
+            // extend drawings to match life_bar
+            DrawRectangle(15,20,life_bar,12,LIGHTGRAY);
+            // draw outer lines
+            DrawRectangleLines(15,20,life_bar,12,GRAY);
+        }else{// else, or if both are below 200, draw bar to default 200 while the red life_bar drains
+            DrawRectangle(15,20,200,12,LIGHTGRAY);
+            DrawRectangleLines(15,20,200,12,GRAY);
+        }
+        // use non static life_bar variable to animate the life bar when hit by enemy or gain when enemies are killed
         DrawRectangle(15,20,life_bar,12,RED);
-        DrawRectangleLines(15,20,200,12,GRAY);
+        // add text to lifebar
         DrawText("HEALTH",100,22,10,BLACK);
         // Draw Demons life bar
         DrawRectangle(windowWidth - 215,20,200,12,LIGHTGRAY);
+        // use Enemy_Amount to increase,decrease int width
         DrawRectangle(windowWidth - 215,20,Enemy_Amount,12,RED);
         DrawRectangleLines(windowWidth - 215,20,200,12,GRAY);
+        // Draw game controls as a list on the right hand side of game screen
         DrawText("DEMONS",windowWidth -135,22,10,BLACK);
         DrawText("CONTROLS:",windowWidth-185, 44,16,RED);
         DrawText("A = Move Left",windowWidth-185, 66,16,RED);  
         DrawText("D = Move Right",windowWidth-185, 88,16,RED);
         DrawText("Hold Ctrl Right = Fire",windowWidth-185, 110,16,RED);
         DrawText("SPACE = Jump",windowWidth-185, 132,16,RED);  
-        //  , Hold Ctrl Right = Fire Shotgun, SPACE = Jump",
-
-        // Draw Score
+        // Draw Score, use TextFormat() method to concatinate the Score_Count value into the char text, set text in the center between life_bar & Enemy_Amount(DEMONS) bar, colour maroon
         DrawText(TextFormat("SCORE: %i00",Score_Count),windowWidth/2-50,22,20,MAROON);
+        // draw under score info, message to inform player to Kill Demons, Gain Health!, TextFormat() concat includes life_bar values in text, set as lightgray 
+        DrawText(TextFormat("Kill Demons, Gain Health! %i", life_bar),windowWidth/2-80,50,16,LIGHTGRAY);
         
 
-
+        // check if marine is active
         if(marine_active == true){
             // Call DrawTextureRec() method from the raylib.h library and include the Texture2D texture, Rectangle source, Vector2 position, Color tint
             // Draw the marine for the game
@@ -384,6 +395,9 @@ int main() {
         // if (marineAnim.pos.y  > windowHeight){
         //     marineAnim.pos.y = windowHeight;
         // };
+
+        // the original code sourced from Dr.Naoise Collins, DKIT
+
         ////////////////////////////// Make Character Jump - Y-AXIS //////////////////////////////
 
         // if the marine's position on the y axis is greater than or equal to windowHeight - marine.height
@@ -497,7 +511,7 @@ int main() {
         //     marineAnim.speed.x = 0;
         // }
         
-                
+        // the original code sourced from Dr.Naoise Collins, DKIT     
 
         //---------------------------  Shooting   -------------------------------------- 
         
@@ -707,6 +721,7 @@ int main() {
                         shell[i].active = false;
                         // decrease Enemy_Amount
                         Enemy_Amount--;
+                        // draw text to display Kill Demons, Gain Health! + concat life_bar values in the colour Green 
                         DrawText(TextFormat("Kill Demons, Gain Health! %i", life_bar),windowWidth/2-80,50,16,GREEN);
                         PlaySound(demonDeath);
                         // if enemys = 0 and no Game_over_text
@@ -717,7 +732,8 @@ int main() {
                             enemy[a].EnemyPosition.x = 800;
                             // increment score count, start counting score
                             Score_Count++;
-                            life_bar < 200?: life_bar+= 20;
+                            // if life_bar is less than 200, add 20 health point
+                            if(life_bar < 200) life_bar+= 20;
                         }
                         // console log to log score value when enemy is killed
                         // std::cout << Score_Count << " :SCORE_COUNT\n";    
@@ -728,24 +744,28 @@ int main() {
 
 
         // Check collisions with enemy and shells coming from the leftward direction
-
+        // begin loop through shells
         for (int i = 0; i < shell_left_num; i++){
-
+            // if shell active
             if ((shellLeft[i].activeLeft)){
-                
+                // begin loop through enemies
                 for (int a = 0; a < Enemy_Amount; a++) {
-                    
+                    // if enemy is active and shell and enemy have collided
                     if (enemy[a].active && CheckCollisionRecs(shellLeft[i].recLeft, enemy[a].EnemyCollision)){
-                        
+                        //  set shell to false
                         shellLeft[i].activeLeft = false;
-                        
+                        // decrease Enemy_Amount
                         Enemy_Amount--;
+                        // draw text to display Kill Demons, Gain Health! + concat life_bar values in the colour Green
                         DrawText(TextFormat("Kill Demons, Gain Health! %i", life_bar),windowWidth/2-80,50,16,GREEN);
                         if(Enemy_Amount == 0 && !Game_Over_Text){
+                            // create more enemies with GetRandomValue method, randomize enemy numbers between 1 -5
                             Enemy_Amount = GetRandomValue(1,5);
+                            // increment score count, start counting score
                             Score_Count++;
-                            // if(life_bar < 200) life_bar+= 30;
-                            life_bar < 200?: life_bar+= 20;
+                            // if life_bar is less than 200, add 20 health points
+                            if(life_bar < 200) {life_bar+= 20;}
+                            // recycle the killed enemy and make active by -100 outside of left screen width
                             enemy[a].EnemyPosition.x = -100;
                         }
                     }
@@ -757,9 +777,11 @@ int main() {
 
         
 
-        // Draw Enemy
+        // Draw Enemy when Enemy_Active bool is true
         if(Enemy_Active){
+            // create for loop to search for active enemy in Enemy_Amount,
             for (int i = 0; i < Enemy_Amount; i++){
+                // if enemy is active in loop, Draw the demon texture and use Rectangle and Vector2 positions from the Enemy_Amount loop
                 if (enemy[i].active) {
                     DrawTextureRec(demon, enemy[i].EnemyFrameRec, enemy[i].EnemyPosition, WHITE);
 
@@ -770,17 +792,17 @@ int main() {
         // Call raylib's ClearBackground method, colour window white
         // ClearBackground(BLACK);
 
-
-        
-
         // Enemy Code sourced from HE360, Raylib C/C++ Tutorial 6: Animated Enemy Sprites, A.I., Collisions, and How to  Defeat Your Enemy. https://www.youtube.com/watch?v=lCJrj_IEFlw
         // --------------------------------------------------------------------------------------------------
         //                                   Marine/Eenmy Collision Conditions
         // --------------------------------------------------------------------------------------------------
         
-        for(int i = 0; i < marine_and_enemy_Collide; i++){
-                life_bar-- ;
+        //  if collision, enemey attacks marine
+        if(marine_and_enemy_Collide){
+                // play sfx
                 PlaySound(gotHurt);
+                // decrement lifebar
+                life_bar-- ;
                 // std::cout << life_bar << "\n";
                 // Draw message
                 DrawText("Demons are draining your life!\n Move!!!",10, 60, 20, RED); 
@@ -788,10 +810,10 @@ int main() {
 
         // if the marines life bar is equal to zero
         if (life_bar == 0){
-            // The marine is no longer active
-            marine_active = false;
+            // play sfx
             PlaySound(gotKilled);
-
+            // The marine & Enemy are no longer active
+            marine_active = false;
             Enemy_Active = false;
 
         }
@@ -873,10 +895,10 @@ int main() {
         UnloadTexture(marine);
         UnloadTexture(demon);
         
-
+        // Close Aduiodevice and Close window and unload OpenGL context
         CloseAudioDevice(); 
         CloseWindow();
-
+        // return 0 to stop the execution of the program
         return 0;
 
 }
