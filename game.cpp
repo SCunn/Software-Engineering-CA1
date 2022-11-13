@@ -4,6 +4,7 @@
 
 #include <iostream>
 
+
 // #define PLAYER_MAX_SHELLS  1
 
 // #define PLAYER_MAX_SHELLS_Left  1
@@ -96,7 +97,7 @@ int main() {
 
     //Call initWindow method from the raylib library to create a new window to display the game on. 
     // include the following variable types within the brackets(int width, int height, const char *title) 
-    InitWindow(windowWidth,windowHeight,"DuuM Fook'em 2D");
+    InitWindow(windowWidth,windowHeight,"DuuM NewcaM 2D");
 
     InitAudioDevice();
 
@@ -107,14 +108,23 @@ int main() {
     // Locate and load the texture file in the resources folder  // Marine.png original DOOM content taken from https://spritedatabase.net/file/555
     Texture2D marine = LoadTexture("resources/space-marine-run.png");
     Texture2D demon = LoadTexture("resources/demon_run.png");
+    // Locate and load the texture file in the resources folder
+    Texture2D background = LoadTexture("resources/preview-bulkhead-walls-v2.png");
 
     // Audio
     Music music = LoadMusicStream("resources/shane_cunningham_Bosca_ceoil_1.wav");
     // shotgun.wav by Marregheriti sourced from https://freesound.org/people/Marregheriti/sounds/266105/
     Sound shotgun = LoadSound("resources/266105__marregheriti__shotgun.wav");
-
+    // Angry Beast.wav by husky70 sourced from https://freesound.org/people/husky70/sounds/170454/
     Sound growl = LoadSound("resources/angry-beast.wav");
-
+    // Monster death throes 1 by giddster sourced from https://freesound.org/people/giddster/sounds/464937/
+    Sound demonDeath = LoadSound("resources/464937__giddster__monster-death-throes-1.wav");
+    // death metal guitar 2.wav by Veiler sourced from https://freesound.org/people/Veiler/sounds/581305/
+    Sound startOver = LoadSound("resources/581305__veiler__death-metal-guitar-2.wav");
+    // Grunt1 - Death Pain.wav by tonsil5 sourced from https://freesound.org/people/tonsil5/sounds/416839/
+    Sound gotHurt = LoadSound("resources/416839__tonsil5__grunt1-death-pain.wav");
+    // Grunt2 - Death Pain.wav by tonsil5 sourced from https://freesound.org/people/tonsil5/sounds/416838/
+    Sound gotKilled = LoadSound("resources/416838__tonsil5__grunt2-death-pain.wav");
     // Local variables
 
     // number of shells fired rightward
@@ -176,7 +186,6 @@ int main() {
             shell[i].shot_speed.x = 100;
             shell[i].shot_speed.y = 100;
             shell[i].active = false;
-            shell[i].lifeSpawn = 0;
             }
             int fire_rate = 0;
 
@@ -191,7 +200,6 @@ int main() {
             shellLeft[i].shot_speedLeft.x = 100;
             shellLeft[i].shot_speedLeft.y = 100;
             shellLeft[i].activeLeft = false;
-            shellLeft[i].lifeSpawnLeft = 0;
     }   
 
         
@@ -307,12 +315,6 @@ int main() {
         // Include Rectangle marineRec class to all for updates to the variables during the game runtime, 
         // used for game collisions
 
-        // Rectangle demonicRec{
-		//     demonPos.x,
-		//     demonPos.y,
-		//     demonRec.height,
-		//     demonRec.width,
-	    // };
         Rectangle marineRec{
 	        marineAnim.pos.x,
 	        marineAnim.pos.y,
@@ -333,26 +335,42 @@ int main() {
             // std::cout << marine_and_enemy_Collide << " :marine_and_enemy_Collide\n";
             // output: 1 :marine_and_enemy_Collide or 0 :marine_and_enemy_Collide, 1 for collision, 0 for none
 
-
+        float scrollingBack = 0.0f;
 
         BeginDrawing();
 
         //  ############################### Character Movement ###########################
 
-        // -----------------------------------------------------------------------
+        // ------------------------------------------------------------------------------
         //                                       Marine 
-        // -----------------------------------------------------------------------
+        // ------------------------------------------------------------------------------
 
+        // Call raylib's ClearBackground method, colour window white
+        ClearBackground(BLACK);
+        // DrawTexture(background,windowWidth,windowHeight,WHITE);
+
+        DrawTextureEx(background, (Vector2){ scrollingBack, 20 }, 0.0f, 2.0f, WHITE);
+        
         // Draw Life Bar for Marine
         DrawRectangle(15,20,200,12,LIGHTGRAY);
         DrawRectangle(15,20,life_bar,12,RED);
         DrawRectangleLines(15,20,200,12,GRAY);
         DrawText("HEALTH",100,22,10,BLACK);
-
+        // Draw Demons life bar
         DrawRectangle(windowWidth - 215,20,200,12,LIGHTGRAY);
         DrawRectangle(windowWidth - 215,20,Enemy_Amount,12,RED);
         DrawRectangleLines(windowWidth - 215,20,200,12,GRAY);
         DrawText("DEMONS",windowWidth -135,22,10,BLACK);
+        DrawText("CONTROLS:",windowWidth-185, 44,16,RED);
+        DrawText("A = Move Left",windowWidth-185, 66,16,RED);  
+        DrawText("D = Move Right",windowWidth-185, 88,16,RED);
+        DrawText("Hold Ctrl Right = Fire",windowWidth-185, 110,16,RED);
+        DrawText("SPACE = Jump",windowWidth-185, 132,16,RED);  
+        //  , Hold Ctrl Right = Fire Shotgun, SPACE = Jump",
+
+        // Draw Score
+        DrawText(TextFormat("SCORE: %i00",Score_Count),windowWidth/2-50,22,20,MAROON);
+        
 
 
         if(marine_active == true){
@@ -481,83 +499,110 @@ int main() {
         
                 
 
-        
-
         //---------------------------  Shooting   -------------------------------------- 
         
         
         // Draw Shells right
+        // check if the marine is active (or being drawn)
         if(marine_active){
+            //  this loop searches for an active shell
             for (int i = 0; i < shell_num; i++){
+                // if the active shell is found
                 if(shell[i].active){
+                    // Draw a shell using rectangle x,y from .rec, add colour, all is called from the shell class
                     DrawRectangleRec(shell[i].rec, shell[i].colour);
                 }
             }
         
             // Shoot to the right of the x axis
-
+            // check if the right Ctrl key is down and the marine charecter is facing right
             if(IsKeyDown(KEY_RIGHT_CONTROL) && right){
+                // increment fire_rate
                 fire_rate += 1;
+                // loop through shells
                 for (int i = 0; i < shell_num; i++){
-                    if (!shell[i].active && fire_rate % 90 == 0){
+                    //  this loop searches for an non active shell and if the fire rates modulo of 67 has a remainder equal to 0, fire_rate % 67 controls the speed of the rate of fire, setting the speed at 67 keeps in sync with the shotgun sound fx
+                    if (!shell[i].active && fire_rate % 67 == 0){
                         // add sfx here PlaySound(sound);
                         PlaySound(shotgun);
-                        shell[i].rec.x = marineAnim.pos.x + marineAnim.rec.width /5;
+                        // fire from marine's x and y positions, divided by 6 frames on the x, to move shot closer to marine
+                        shell[i].rec.x = marineAnim.pos.x + marineAnim.rec.width /6;
+                        // divided by 2 on the rectangle height on the y, to move shot to the center of marine
                         shell[i].rec.y = marineAnim.pos.y + marineAnim.rec.height / 2;
+                        // set shell to active, so it will appear on screen
                         shell[i].active = true;
+                        // Used to braek from the loop if the condition is true, so loop fires once, and then breaks
                         break;
                     }
                 }
             }
 
-
+            //  this loop searches for an active shell
             for (int i = 0; i < shell_num; i++){
-                    if (shell[i].active) {
+                // if the active shell is found
+                if (shell[i].active) {
+                    // add speed to the shot on the x axis
                     shell[i].rec.x += shell[i].shot_speed.x;
-
+                    // if the shell from rectangle x axis is less than or equal to 0, meaning , if shell not fired
                     if (shell[i].rec.x <= 0) {
+                        // shell is not active
                         shell[i].active = false;
+                        // fire rate is zero
                         fire_rate = 0;
                     }
-
-
                 }
             }
 
         
 
             // Draw Shells left
+            //  this loop searches for an active shell
             for (int i = 0; i < shell_left_num; i++){
+                // if the active shell is found
                 if(shellLeft[i].activeLeft){
+                    // Draw a shell using rectangle x,y from .rec, add colour, all is called from the shellLeft class
                     DrawRectangleRec(shellLeft[i].recLeft, shellLeft[i].colourLeft);
                 }
             }
 
             // Shoot to the left of the x axis
+            // check if the right Ctrl key is down and the marine charecter is facing left
             if(IsKeyDown(KEY_RIGHT_CONTROL) && left){
+                // increment fire_rate
                 fire_rate += 1;
+                // loop through shells
                 for (int i = 0; i < shell_left_num; i++){
-                    if (!shellLeft[i].activeLeft && fire_rate % 90 == 0){
+                    //  this loop searches for an non active shell and if the fire rates modulo of 67 has a remainder equal to 0, fire_rate % 67 controls the speed of the rate of fire, setting the speed at 67 keeps in sync with the shotgun sound fx
+                    if (!shellLeft[i].activeLeft && fire_rate % 67 == 0){
                         // add sfx here PlaySound(sound);
                         PlaySound(shotgun);
-                        shellLeft[i].recLeft.x = marineAnim.pos.x + marineAnim.rec.width /5; //(float)0.5;
+                        // fire from marine's x and y positions, divided by 6 frames on the x, to move shot closer to marine
+                        shellLeft[i].recLeft.x = marineAnim.pos.x + marineAnim.rec.width /6;
+                        // divided by 2 on the rectangle height on the y, to move shot to the center of marine
                         shellLeft[i].recLeft.y = marineAnim.pos.y + marineAnim.rec.height / 2;
+                        // set shell to active, so it will appear on screen
                         shellLeft[i].activeLeft = true;
+                        // braek from the loop 
                         break;
                     }
                 }
             }
 
-
-            for (int i = 0; i < shell_num; i++){
+            //  this loop searches for an active shell
+            for (int i = 0; i < shell_left_num; i++){
+                // if the active shell is found
                     if (shellLeft[i].activeLeft) {
+                      // add speed to the shot on the x axis  
                     shellLeft[i].recLeft.x -= shellLeft[i].shot_speedLeft.x;
-
+                    // if the shell from rectangle x axis is less than or equal to 0, meaning , if shell not fired
                     if (shellLeft[i].recLeft.x <= 0) {
+                        // shell is not active
                         shellLeft[i].activeLeft = false;
+                        // fire rate is zero
                         fire_rate = 0;
                     }
                 }
+                
             }
         }   
 
@@ -650,27 +695,32 @@ int main() {
 
 
         // Check collisions with enemy and shells coming from the rightward direction
-
+        // begin loop through shells
         for (int i = 0; i < shell_num; i++){
-
+            // if shell active
             if ((shell[i].active)){
-                
+                // begin loop through enemies
                 for (int a = 0; a < Enemy_Amount; a++) {
-                    
+                    // if enemy is active and shell and enemy have collided
                     if (enemy[a].active && CheckCollisionRecs(shell[i].rec, enemy[a].EnemyCollision)){
-                        
+                        //  set shell to false
                         shell[i].active = false;
-                        shell[i].lifeSpawn = 0;
-                        // enemy[a].active = false;
                         // decrease Enemy_Amount
                         Enemy_Amount--;
+                        DrawText(TextFormat("Kill Demons, Gain Health! %i", life_bar),windowWidth/2-80,50,16,GREEN);
+                        PlaySound(demonDeath);
+                        // if enemys = 0 and no Game_over_text
                         if(Enemy_Amount == 0 && !Game_Over_Text){
+                            // create more enemies with GetRandomValue method, randomize enemy numbers between 1 -5
                             Enemy_Amount = GetRandomValue(1,5);
+                            // recycle the killed enemy and make active by 100 outside of right screen width
                             enemy[a].EnemyPosition.x = 800;
+                            // increment score count, start counting score
                             Score_Count++;
+                            life_bar < 200?: life_bar+= 20;
                         }
+                        // console log to log score value when enemy is killed
                         // std::cout << Score_Count << " :SCORE_COUNT\n";    
-                        
                     }
                 }
             }
@@ -688,24 +738,22 @@ int main() {
                     if (enemy[a].active && CheckCollisionRecs(shellLeft[i].recLeft, enemy[a].EnemyCollision)){
                         
                         shellLeft[i].activeLeft = false;
-                        shellLeft[i].lifeSpawnLeft = 0;
-                        // PlaySound(growl);
-                        // enemy[a].active = false;
-                        DrawText("Demon Hit", 10, 60, 20, WHITE);
+                        
                         Enemy_Amount--;
+                        DrawText(TextFormat("Kill Demons, Gain Health! %i", life_bar),windowWidth/2-80,50,16,GREEN);
                         if(Enemy_Amount == 0 && !Game_Over_Text){
                             Enemy_Amount = GetRandomValue(1,5);
                             Score_Count++;
+                            // if(life_bar < 200) life_bar+= 30;
+                            life_bar < 200?: life_bar+= 20;
                             enemy[a].EnemyPosition.x = -100;
                         }
-                        // enemy[a].EnemyPosition.x = -100;
-                            
-                        
-                        
                     }
                 }
             }
         }
+
+        
 
         
 
@@ -720,7 +768,7 @@ int main() {
         }
 
         // Call raylib's ClearBackground method, colour window white
-        ClearBackground(BLACK);
+        // ClearBackground(BLACK);
 
 
         
@@ -732,47 +780,40 @@ int main() {
         
         for(int i = 0; i < marine_and_enemy_Collide; i++){
                 life_bar-- ;
-                
+                PlaySound(gotHurt);
                 // std::cout << life_bar << "\n";
-                //  break;
+                // Draw message
+                DrawText("Demons are draining your life!\n Move!!!",10, 60, 20, RED); 
         }
-        // if collision between marine + enemy and marine active
-        if (marine_and_enemy_Collide && marine_active) {
-        //    Draw message
-            DrawText("Demons are draining your life!\n Move!!!",10, 60, 20, RED); 
-        } 
+
         // if the marines life bar is equal to zero
         if (life_bar == 0){
             // The marine is no longer active
             marine_active = false;
+            PlaySound(gotKilled);
 
             Enemy_Active = false;
-            // loop throught the Enemy_Amount value to set enemy activity to false, making the demon disapeer
-            // for(int i = 0; i < Enemy_Amount; i++){
-                // enemy[i].active = false;
-            // }
+
         }
 
         // ---------------------------------------------------------------------------------------------------
         //                                          End Game Conditions
         // ---------------------------------------------------------------------------------------------------
-        //  if Marine is not active
+        //  if Marine is not active, Game over
         if (!marine_active){
             // Set Game over text to "You Are Dead!"
             Game_Over_Text ="You Are Dead!";
+            
         }
-        //  if Score_Count is greater than value
+        //  if Score_Count is greater than value, Player Wins
         if(Score_Count >= 1000){
             // The marine is no longer active
             marine_active = false;
-
+            // The enemy is no longer active
             Enemy_Active = false;
-
-            // for(int i = 0; i < Enemy_Amount; i++){
-                // enemy[i].active = false;
-            // }
             // Set Game over text to "You Win ! Max Score Achieved !"
             Game_Over_Text = "You Win ! Max Score Achieved !";
+            
         }
         //  Original Code sourced from JonesRepo, Pong-Tutorial, https://github.com/JonesRepo/Pong-Tutorial , Rights: MIT 
         //  if the Game_Over_Text contains either char values "You Are Dead!" or "You Win ! Max Score Achieved !"
@@ -783,6 +824,7 @@ int main() {
             DrawText(Game_Over_Text, GetScreenWidth() / 2 - textWidth / 3 + 10, GetScreenHeight() / 2 - 30, 40, YELLOW);
             // 
             DrawText(replay, GetScreenWidth() / 2 - textWidth / 4, GetScreenHeight() / 2 + 50, 20, YELLOW);
+            
         }
         // Restart Game
         if(Game_Over_Text && IsKeyPressed(KEY_R)) {
@@ -801,86 +843,33 @@ int main() {
             // bool to see if marine character is active
             marine_active = true;
 
-            Enemy_Active = true;
             // -------------------------- DEMON / ENEMY -------------------------------
+            // start drawing enemy by setting:
+            Enemy_Active = true;
+            // Reset score back to zero
             Score_Count = 0;
+            // generate random enemy values from 1 to 4
             Enemy_Amount = GetRandomValue(1,4);
-
+            // loop through enemy amount
             for(int i = 0; i < Enemy_Amount; i++){
+                // set frame rectangle to 0.0 frames, set start position back to 750, set active true
                 enemy[i].EnemyFrameRec.x = 0.0f;
                 enemy[i].EnemyFrameRec.y = 0.0f;
                 enemy[i].EnemyPosition.x = 750;
                 // enemy[i].EnemyPosition.y;
                 enemy[i].active = true;
             }
-
+            PlaySound(startOver);
 
         }
 
 
-         
-        // else{
-        //     //     marine_active = false;
-        //     // }
-        //     // marine_active = false;
-        //     // for(int i = 0; i < Enemy_Amount; i++){
-        //     //     if(enemy[i].active == true){enemy[i].active = false;}
-        //     // }
-
-        //     // ClearBackground(RED);
-
-        //     // DrawText("You Are Dead!", 10, 60, 20, WHITE);
-
-        //     // DrawText("Hit", 10, 60, 20, WHITE);
-
-        //     // for(int i = 0; i < Enemy_Amount; i++){
-
-        //     //     if (enemy[i].EnemyCurrentFrame >= 1 ){
-        //     //         enemy[i].EnemyCurrentFrame = 1;
-        //     //     }
-        //     // }
-          
-        // } /*else if(IsKeyPressed(KEY_ENTER)){
-        //     marine_active = true;
-        // }*/
-
-
-     
-
-
-
-
-        // if(collision){
-        //     // ClearBackground(RED);
-            // DrawTextureRec(marine,marineAnim.rec,marineAnim.pos,WHITE);
-        //     // Draw the demon
-        //     // DrawTextureRec(demon, demonRec, demonPos, WHITE);
-
-        //     // // Draw Shells
-        //     // for (int i = 0; i < shell_num; i++){
-        //     //     if(shell[i].active){
-        //     //         DrawRectangleRec(shell[i].rec, shell[i].color )
-        //     //     }
-        //     // }
-
-        // } else {
-        // // Call DrawTextureRec() method from the raylib.h library and include the Texture2D texture, Rectangle source, Vector2 position, Color tint
-        //     // Draw the marine for the game
-        //     DrawTextureRec(marine,marineAnim.rec,marineAnim.pos,WHITE);
-        //     // Draw the demon
-        //     // DrawTextureRec(demon, demonRec, demonPos, WHITE); 
-
-        //     // // Draw Shells
-        //     // for (int i = 0; i < shell_num; i++){
-        //     //     if(shell[i].active){
-        //     //         DrawRectangleRec(shell[i].rec, shell[i].color )
-        //     //     }
-        //     // }
-        // }
-
         // Call raylib's EndDrawing method, this method ends the canvas drawing and swaps the buffers
         EndDrawing();
-    }
+    }   
+        // 
+        // Unload textures from GPU memory (VRAM)
+        UnloadTexture(background);
         UnloadTexture(marine);
         UnloadTexture(demon);
         
