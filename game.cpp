@@ -300,7 +300,7 @@ int main() {
     const char* replay = "Press R To Play Again";
 
 
-
+    // Set window frame rate to 60 frames per second
     SetTargetFPS(60);
     // Create While loop, While WindowShouldClose is false, initiate methods within the while loop brackets
     while(!WindowShouldClose()){
